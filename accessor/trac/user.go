@@ -5,6 +5,7 @@
 package trac
 
 import "github.com/pkg/errors"
+import "database/sql"
 
 // GetUserNames retrieves the names of all users mentioned in Trac tickets, wiki pages etc., passing each one to the provided "handler" function.
 func (accessor *DefaultAccessor) GetUserNames(handlerFn func(userName string) error) error {
@@ -23,13 +24,17 @@ func (accessor *DefaultAccessor) GetUserNames(handlerFn func(userName string) er
 	}
 
 	for rows.Next() {
-		var userName string
+		var userName sql.NullString
 		if err = rows.Scan(&userName); err != nil {
 			err = errors.Wrapf(err, "retrieving Trac user")
 			return err
 		}
 
-		if err = handlerFn(userName); err != nil {
+		if ! userName.Valid {
+			continue
+		}
+
+		if err = handlerFn(userName.String); err != nil {
 			return err
 		}
 
