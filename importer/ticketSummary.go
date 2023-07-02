@@ -17,7 +17,14 @@ func (importer *Importer) importSummaryChangeIssueComment(issueID int64, change 
 	}
 
 	prevSummary := change.OldValue
+        if len(prevSummary) > 255 {
+                prevSummary = prevSummary[:250] + "[...]"
+        }
+
 	summary := change.NewValue
+        if len(summary) > 255 {
+                summary = summary[:250] + "[...]"
+        }
 
 	issueComment.CommentType = gitea.TitleIssueCommentType
 	issueComment.OldTitle = prevSummary
