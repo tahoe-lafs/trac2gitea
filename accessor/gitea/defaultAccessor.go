@@ -190,6 +190,9 @@ func CreateDefaultAccessor(
 		giteaWikiRepoDir = filepath.Join(cwd, wikiRepoName)
 	}
 	_, err = os.Stat(giteaWikiRepoDir)
+	if os.IsPermission(err) {
+		return nil, fmt.Errorf("you don't have permission to access directory %s", giteaWikiRepoDir)
+	}
 	if !os.IsNotExist(err) {
 		return nil, fmt.Errorf("wiki repository directory %s already exists", giteaWikiRepoDir)
 	}
