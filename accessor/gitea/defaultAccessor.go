@@ -6,10 +6,12 @@ package gitea
 
 import (
 	"fmt"
+	systemlog "log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
@@ -138,11 +140,21 @@ func CreateDefaultAccessor(
 		return nil, err
 	}
 
+	gormLogger := logger.New(
+		systemlog.New(os.Stdout, "\r\n", systemlog.LstdFlags),
+		logger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			LogLevel:                  getGormLogLevel(),
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
+		},
+	)
+
 	db, err := gorm.Open(dialect, &gorm.Config{
 		SkipDefaultTransaction: true,
 		TranslateError:         true,
 		QueryFields:            true,
-		Logger:                 logger.Default.LogMode(getGormLogLevel()),
+		Logger:                 gormLogger,
 	})
 
 	if err != nil {
