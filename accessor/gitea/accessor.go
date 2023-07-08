@@ -21,6 +21,7 @@ type User struct {
 	ID        int64
 	LowerName string
 	Name      string
+	FullName  string
 	Email     string
 }
 
@@ -332,6 +333,9 @@ type Accessor interface {
 	/*
 	 * Users
 	 */
+	// SetUserFullName sets the full name for a named Gitea user
+	SetUserFullName(userName string, userFullName string) error
+
 	// GetUserID retrieves the id of a named Gitea user - returns NullID if no such user.
 	GetUserID(userName string) (int64, error)
 

@@ -133,6 +133,9 @@ func parseArgs() {
 // importData imports the non-wiki Trac data.
 func importData(dataImporter *importer.Importer, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap map[string]string) error {
 	var err error
+	if err = dataImporter.ImportFullNames(); err != nil {
+		return err
+	}
 	if err = dataImporter.ImportComponents(componentMap); err != nil {
 		return err
 	}
