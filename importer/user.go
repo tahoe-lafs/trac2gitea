@@ -56,3 +56,7 @@ func (importer *Importer) getUserID(tracUser string, userMap map[string]string) 
 	log.Debug("mapped Trac user %s onto Gitea user %s", tracUser, giteaUserName)
 	return userID, nil
 }
+
+func (importer *Importer) ImportFullNames() error {
+	return importer.tracAccessor.GetFullNames(importer.giteaAccessor.SetUserFullName)
+}

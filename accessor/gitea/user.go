@@ -12,6 +12,21 @@ import (
 	"gorm.io/gorm"
 )
 
+// SetUserFullName sets the full name for a named Gitea user
+func (accessor *DefaultAccessor) SetUserFullName(userName string, userFullName string) error {
+	err := accessor.db.Model(&User{}).
+		Where("name=?", userName).
+		Limit(1).
+		Update("full_name", &userFullName).Error
+
+	if err != nil {
+		err = errors.Wrapf(err, "setting full name %s for user %s", userFullName, userName)
+		return err
+	}
+
+	return nil
+}
+
 // GetUserID retrieves the id of a named Gitea user - returns NullID if no such user.
 func (accessor *DefaultAccessor) GetUserID(userName string) (int64, error) {
 	if strings.Trim(userName, " ") == "" {
