@@ -235,7 +235,7 @@ func (accessor *DefaultAccessor) getDbDialect() (gorm.Dialector, string, error) 
 		dialect = sqlite.Open(giteaDbPath)
 
 	case "mysql":
-		if dbCharset == "utf8" {
+		if dbCharset == "utf8" || dbCharset == "" {
 			dbCharset = "utf8mb4"
 		}
 		connstr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local",
