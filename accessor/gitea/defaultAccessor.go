@@ -251,8 +251,11 @@ func (accessor *DefaultAccessor) getDbDialect() (gorm.Dialector, string, error) 
 		dialect = sqlite.Open(giteaDbPath)
 
 	case "mysql":
-		connstr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-			url.PathEscape(dbUser), url.PathEscape(dbPassword), dbHost, dbName)
+		if dbCharset == "utf8" || dbCharset == "" {
+			dbCharset = "utf8mb4"
+		}
+		connstr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local",
+			url.PathEscape(dbUser), url.PathEscape(dbPassword), dbHost, dbName, dbCharset)
 		dialect = mysql.Open(connstr)
 
 	case "postgres":
