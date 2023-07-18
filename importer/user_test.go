@@ -28,7 +28,7 @@ const (
 func expectToRetrieveTracUsers(t *testing.T, users ...string) {
 	mockTracAccessor.
 		EXPECT().
-		GetUserNames(gomock.Any()).
+		GetUsers(gomock.Any()).
 		DoAndReturn(func(handlerFn func(u string) error) error {
 			for _, user := range users {
 				handlerFn(user)
@@ -51,7 +51,7 @@ func TestDefaultUserMapForUserWithNoEmail(t *testing.T) {
 	expectToRetrieveTracUsers(t, noEmailUser)
 	expectMatchUser(t, noEmailUserName, "", matchedNoEmailUser)
 	userMap, _ := dataImporter.DefaultUserMap()
-	assertEquals(t, userMap[noEmailUser], matchedNoEmailUser)
+	assertEquals(t, userMap[noEmailUserName], matchedNoEmailUser)
 }
 
 func TestDefaultUserMapForUserWithEmail(t *testing.T) {
@@ -61,7 +61,7 @@ func TestDefaultUserMapForUserWithEmail(t *testing.T) {
 	expectToRetrieveTracUsers(t, emailUser)
 	expectMatchUser(t, emailUserName, emailUserEmail, matchedEmailUser)
 	userMap, _ := dataImporter.DefaultUserMap()
-	assertEquals(t, userMap[emailUser], matchedEmailUser)
+	assertEquals(t, userMap[emailUserName], matchedEmailUser)
 }
 
 func TestDefaultUserMapForUnmatchedUser(t *testing.T) {
@@ -72,7 +72,7 @@ func TestDefaultUserMapForUnmatchedUser(t *testing.T) {
 	expectMatchUser(t, noMatchUserName, noMatchUserEmail, "")
 
 	userMap, _ := dataImporter.DefaultUserMap()
-	assertEquals(t, userMap[noMatchUser], "")
+	assertEquals(t, userMap[noMatchUserName], "")
 }
 
 func TestDefaultUserMapForMultipleUsers(t *testing.T) {
@@ -85,7 +85,7 @@ func TestDefaultUserMapForMultipleUsers(t *testing.T) {
 	expectMatchUser(t, noMatchUserName, noMatchUserEmail, "")
 
 	userMap, _ := dataImporter.DefaultUserMap()
-	assertEquals(t, userMap[noEmailUser], matchedNoEmailUser)
-	assertEquals(t, userMap[emailUser], matchedEmailUser)
-	assertEquals(t, userMap[noMatchUser], "")
+	assertEquals(t, userMap[noEmailUserName], matchedNoEmailUser)
+	assertEquals(t, userMap[emailUserName], matchedEmailUser)
+	assertEquals(t, userMap[noMatchUserName], "")
 }

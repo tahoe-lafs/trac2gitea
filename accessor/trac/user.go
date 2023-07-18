@@ -32,8 +32,8 @@ func (accessor *DefaultAccessor) GetFullNames(handlerFn func(userName string, fu
 	return nil
 }
 
-// GetUserNames retrieves the names of all users mentioned in Trac tickets, wiki pages etc., passing each one to the provided "handler" function.
-func (accessor *DefaultAccessor) GetUserNames(handlerFn func(userName string) error) error {
+// GetUsers retrieves the names and emails of all users mentioned in Trac tickets, wiki pages etc., passing each one to the provided "handler" function.
+func (accessor *DefaultAccessor) GetUsers(handlerFn func(user string) error) error {
 	// find every conceivable place where a user name may be hiding
 	// some of these may be redundant but it does no harm
 	rows, err := accessor.db.Query(`
@@ -59,7 +59,16 @@ func (accessor *DefaultAccessor) GetUserNames(handlerFn func(userName string) er
 			continue
 		}
 
-		if err = handlerFn(userName.String); err != nil {
+		user := userName.String
+
+		// find if an email address is associated with the user
+		emailRow := accessor.db.QueryRow(`SELECT value FROM session_attribute WHERE name='email' AND sid=$1`, userName.String)
+		var userEmail string
+		if err = emailRow.Scan(&userEmail); err == nil {
+			user += " <" + userEmail + ">"
+		}
+
+		if err = handlerFn(user); err != nil {
 			return err
 		}
 

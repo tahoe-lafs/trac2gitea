@@ -19,7 +19,7 @@ var userRegexp = regexp.MustCompile(`([^<]*)(?:<([^>]+)>)?`)
 func (importer *Importer) DefaultUserMap() (map[string]string, error) {
 	userMap := make(map[string]string)
 
-	err := importer.tracAccessor.GetUserNames(func(user string) error {
+	err := importer.tracAccessor.GetUsers(func(user string) error {
 		userName := userRegexp.ReplaceAllString(user, `$1`)
 		trimmedUserName := strings.Trim(userName, " ")
 		userEmail := userRegexp.ReplaceAllString(user, `$2`)
@@ -28,9 +28,9 @@ func (importer *Importer) DefaultUserMap() (map[string]string, error) {
 		if err != nil {
 			return err
 		}
-		log.Debug("matched user \"%s\", email \"%s\" to \"%s\"", userName, userEmail, matchedUserName)
+		log.Debug("matched user \"%s\", email \"%s\" to \"%s\"", trimmedUserName, userEmail, matchedUserName)
 
-		userMap[user] = matchedUserName
+		userMap[trimmedUserName] = matchedUserName
 
 		return nil
 	})

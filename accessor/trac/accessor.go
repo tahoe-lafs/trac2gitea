@@ -205,8 +205,8 @@ type Accessor interface {
 	// GetFullNames finds the full names associated with usernames in the Trac database, and passes them to the provided "handler" function
 	GetFullNames(handlerFn func(userName string, fullName string) error) error
 
-	// GetUserNames retrieves the names of all users mentioned in Trac tickets, wiki pages etc., passing each one to the provided "handler" function.
-	GetUserNames(handlerFn func(userName string) error) error
+	// GetUsers retrieves the names and emails of all users mentioned in Trac tickets, wiki pages etc., passing each one to the provided "handler" function.
+	GetUsers(handlerFn func(user string) error) error
 
 	/*
 	 * Versions
