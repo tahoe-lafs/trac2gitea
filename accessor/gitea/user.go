@@ -72,6 +72,10 @@ func (accessor *DefaultAccessor) getUserRepoURL() string {
 
 // MatchUser retrieves the name of the user best matching a user name or email address
 func (accessor *DefaultAccessor) MatchUser(userName string, userEmail string) (string, error) {
+	if userName == "" {
+		return "", nil
+	}
+
 	var matchedUserName string
 
 	err := accessor.db.Model(&User{}).
