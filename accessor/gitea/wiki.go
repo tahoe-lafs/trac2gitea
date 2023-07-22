@@ -68,7 +68,7 @@ func (accessor *DefaultAccessor) CloneWiki() error {
 // CommitWikiToRepo stages any files added or updated since the last commit then commits them to our cloned wiki repo.
 // We package the staging and commit together here because it is easier than embedding hooks to do the git staging
 // deep into the wiki parsing process where files from the Trac worksapce can get copied over on-the-fly.
-func (accessor *DefaultAccessor) CommitWikiToRepo(author string, authorEMail string, message string) error {
+func (accessor *DefaultAccessor) CommitWikiToRepo(author string, updateTime int64, message string) error {
 	worktree, err := accessor.wikiRepo.Worktree()
 	if err != nil {
 		err = errors.Wrapf(err, "retrieving git work tree for cloned wiki")
@@ -90,8 +90,8 @@ func (accessor *DefaultAccessor) CommitWikiToRepo(author string, authorEMail str
 	_, err = worktree.Commit(message, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  author,
-			Email: authorEMail,
-			When:  time.Now(),
+			Email: "",
+			When:  time.Unix(updateTime, 0),
 		},
 	})
 	if err != nil {

@@ -6,7 +6,6 @@ package importer
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/stevejefferson/trac2gitea/log"
 
@@ -21,7 +20,7 @@ func (importer *Importer) importWikiAttachments() {
 	})
 }
 
-func (importer *Importer) importWikiPages(userMap map[string]string) {
+func (importer *Importer) importWikiPages() {
 	importer.tracAccessor.GetWikiPages(func(page *trac.WikiPage) error {
 		// skip predefined pages
 		if !importer.convertPredefineds && importer.tracAccessor.IsPredefinedPage(page.Name) {
@@ -32,8 +31,7 @@ func (importer *Importer) importWikiPages(userMap map[string]string) {
 		// have we already converted this version of the trac wiki page?
 		// - if so, skip it on the assumption that this is a re-import and that the only thing that is likely to have changed
 		// is the addition of later trac versions of wiki pages - these will get added to the wiki repo as later versions
-		updateTimeStr := time.Unix(page.UpdateTime, 0)
-		tracPageVersionIdentifier := fmt.Sprintf("[Imported from Trac: page %s, version %d at %s]", page.Name, page.Version, updateTimeStr)
+		tracPageVersionIdentifier := fmt.Sprintf("[Imported from Trac: page %s, version %d]", page.Name, page.Version)
 		translatedPageName := importer.giteaAccessor.TranslateWikiPageName(page.Name)
 
 		// convert and write wiki page
@@ -47,35 +45,23 @@ func (importer *Importer) importWikiPages(userMap map[string]string) {
 			return nil
 		}
 
-		// find Gitea equivalent of Trac author if any
-		author := page.Author
-		authorEmail := ""
-		giteaAuthor := userMap[page.Author]
-		if giteaAuthor != "" {
-			author = giteaAuthor
-			authorEmail, err = importer.giteaAccessor.GetUserEMailAddress(giteaAuthor)
-			if err != nil {
-				return err
-			}
-		}
-
 		// commit version of wiki page to local repository
 		fullComment := tracPageVersionIdentifier + "\n\n" + page.Comment
-		err = importer.giteaAccessor.CommitWikiToRepo(author, authorEmail, fullComment)
+		err = importer.giteaAccessor.CommitWikiToRepo(page.Author, page.UpdateTime, fullComment)
 		log.Info("wiki page %s: converted from Trac page %s, version %d", translatedPageName, page.Name, page.Version)
 		return err
 	})
 }
 
 // ImportWiki imports a Trac wiki into a Gitea wiki repository.
-func (importer *Importer) ImportWiki(userMap map[string]string) error {
+func (importer *Importer) ImportWiki() error {
 	err := importer.giteaAccessor.CloneWiki()
 	if err != nil {
 		return err
 	}
 
 	importer.importWikiAttachments()
-	importer.importWikiPages(userMap)
+	importer.importWikiPages()
 
 	return nil
 }

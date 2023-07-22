@@ -12,7 +12,7 @@ import (
 
 // GetWikiPages retrieves all Trac wiki pages, passing data from each one to the provided "handler" function.
 func (accessor *DefaultAccessor) GetWikiPages(handlerFn func(page *WikiPage) error) error {
-	rows, err := accessor.db.Query(`SELECT name, text, author, comment, version, CAST(time*1e-6 AS int8) FROM wiki`)
+	rows, err := accessor.db.Query(`SELECT name, text, author, comment, version, CAST(time*1e-6 AS int8) FROM wiki ORDER BY time`)
 	if err != nil {
 		err = errors.Wrapf(err, "retrieving Trac wiki pages")
 		return err

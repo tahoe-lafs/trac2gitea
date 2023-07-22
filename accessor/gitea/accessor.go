@@ -363,7 +363,7 @@ type Accessor interface {
 	CloneWiki() error
 
 	// CommitWikiToRepo commits any files added or updated since the last commit to our local wiki repo.
-	CommitWikiToRepo(author string, authorEMail string, message string) error
+	CommitWikiToRepo(author string, updateTime int64, message string) error
 
 	// CopyFileToWiki copies an external file into the local clone of the Gitea Wiki
 	CopyFileToWiki(externalFilePath string, giteaWikiRelPath string) error
