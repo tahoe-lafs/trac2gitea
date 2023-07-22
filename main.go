@@ -174,7 +174,7 @@ func performImport(dataImporter *importer.Importer, userMap, componentMap, prior
 	}
 
 	if !dbOnly {
-		if err := dataImporter.ImportWiki(userMap); err != nil {
+		if err := dataImporter.ImportWiki(); err != nil {
 			dataImporter.RollbackImport()
 			return err
 		}
