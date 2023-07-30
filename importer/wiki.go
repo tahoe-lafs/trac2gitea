@@ -46,7 +46,10 @@ func (importer *Importer) importWikiPages() {
 		}
 
 		// commit version of wiki page to local repository
-		fullComment := tracPageVersionIdentifier + "\n\n" + page.Comment
+		fullComment := tracPageVersionIdentifier
+		if page.Comment != "" {
+			fullComment = page.Comment + "\n\n" + tracPageVersionIdentifier
+		}
 		err = importer.giteaAccessor.CommitWikiToRepo(page.Author, page.UpdateTime, fullComment)
 		log.Info("wiki page %s: converted from Trac page %s, version %d", translatedPageName, page.Name, page.Version)
 		return err
