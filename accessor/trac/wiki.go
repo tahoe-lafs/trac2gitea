@@ -31,7 +31,7 @@ func (accessor *DefaultAccessor) GetWikiPages(handlerFn func(page *WikiPage) err
 		}
 
 		comment := ""
-		if !commentStr.Valid {
+		if commentStr.Valid {
 			comment = commentStr.String
 		}
 
