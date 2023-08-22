@@ -79,13 +79,15 @@ func (accessor *DefaultAccessor) MatchUser(userName string, userEmail string) (s
 	var matchedUserName string
 
 	err := accessor.db.Model(&User{}).
-		Where("lower_name=?", strings.ToLower(userName)).
-		Or("full_name=?", userName).
-		Or("email=?", userEmail).
+		Where("type=0"). // Do not match users to organizations
+		Where(accessor.db.
+			Where("lower_name=?", strings.ToLower(userName)).
+			Or("full_name=?", userName).
+			Or("email=?", userEmail)).
 		Limit(1).
 		Pluck("lower_name", &matchedUserName).Error
 
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil {
 		err = errors.Wrapf(err, "trying to match user name %s, email %s", userName, userEmail)
 		return "", err
 	}
