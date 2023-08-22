@@ -27,6 +27,9 @@ type DefaultConverter struct {
 func (converter *DefaultConverter) convertNonCodeBlockText(ticketID int64, wikiPage string, in string) string {
 	out := in
 
+	// remove TOC special tags
+	out = converter.removeTOC(out)
+
 	// do simple one-line constructs first
 	out = converter.convertLinks(ticketID, wikiPage, out)
 	out = converter.convertAnchors(out)
