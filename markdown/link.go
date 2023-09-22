@@ -61,14 +61,18 @@ var (
 	// regexp for trac '<CamelCase>#anchor' wiki links: $1=leading char, $2=CamelCase $3=anchor
 	// note: leading char (if any) must be a space or ']'
 	//       - a space constitutes a "start of word" for an "standalone", unbracketted CamelCase link,
+	//       - a zero-width space \u200B might be marking a removed opening square bracket from trac syntax
 	//       - a ']' constitutes the end of the link comment after conversion of the various trac bracketting syntaxes above
-	wikiCamelCaseLinkRegexp = regexp.MustCompile(`([[:space:]\]]|\A)((?:[[:upper:]][[:lower:]]+){2,})(?:#([[:alnum:]?/:@\-._\~!$&'()*+,;=]+))?`)
+	wikiCamelCaseLinkRegexp = regexp.MustCompile(`([[:space:]\x{200B}\]]|\A)((?:[[:upper:]][[:lower:]]+){2,})(?:#([[:alnum:]?/:@\-._\~!$&'()*+,;=]+))?`)
 
 	// regexp for recognising a "marked" link with no accompanying text: $1=leading chars, $2=link
 	noTextMarkedLinkRegexp = regexp.MustCompile(`((?:[^!]\[\])|[^\]])\(@@([^@]+)@@\)`)
 
 	// regexp for recognising a "marked" link with accompanying text: $1=link
 	textMarkedLinkRegexp = regexp.MustCompile(`\(@@([^@]+)@@\)`)
+
+	// zero-width space for separating debracketted links from trailing text, until they are converted to proper markdown
+	zeroWidthSpace = "\u200B"
 )
 
 // link resolution functions:
@@ -279,9 +283,9 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string 
 		image := doubleBracketImageLinkRegexp.ReplaceAllString(match, "$1")
 		link := doubleBracketImageLinkRegexp.ReplaceAllString(match, "$2")
 		if link == "" {
-			return "![]" + image
+			return "![]" + image + zeroWidthSpace
 		}
-		return "[![]" + image + "]" + link
+		return "[![]" + image + "]" + link + zeroWidthSpace
 	})
 
 	out = doubleBracketLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
@@ -311,7 +315,7 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string 
 			return match
 		}
 
-		return "[" + text + "]" + link
+		return "[" + text + "]" + link + zeroWidthSpace
 	})
 
 	return out
@@ -375,6 +379,7 @@ func markLink(in string) string {
 }
 
 // unmarkLinks removes the "marking" placed around links by markLinks and converts them into their final markdown format
+// after that, zero-width spaces can be removed
 func (converter *DefaultConverter) unmarkLinks(in string) string {
 	out := in
 	out = noTextMarkedLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
@@ -392,6 +397,8 @@ func (converter *DefaultConverter) unmarkLinks(in string) string {
 		markdownURL := textMarkedLinkRegexp.ReplaceAllString(match, `$1`)
 		return "(" + markdownURL + ")"
 	})
+
+	out = strings.ReplaceAll(out, zeroWidthSpace, "")
 
 	return out
 }
