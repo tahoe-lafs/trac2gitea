@@ -72,12 +72,18 @@ func verifyLink(
 	tearDownFn func(t *testing.T),
 	convertFn func(tracText string) string,
 	tracFormatLink string,
-	markdownFormatLink string) {
+	markdownFormatLink string,
+	testNoSpaceBoundaries bool) {
 	setUpFn(t)
 	defer tearDownFn(t)
 
-	conversion := convertFn(leadingText + " " + tracFormatLink + " " + trailingText)
-	assertEquals(t, conversion, leadingText+" "+markdownFormatLink+" "+trailingText)
+	boundary := " "
+	if testNoSpaceBoundaries {
+		boundary = ""
+	}
+
+	conversion := convertFn(leadingText + boundary + tracFormatLink + boundary + trailingText)
+	assertEquals(t, conversion, leadingText+boundary+markdownFormatLink+boundary+trailingText)
 }
 
 const (
@@ -92,14 +98,21 @@ func verifyAllLinkTypes(
 	convertFn func(tracText string) string,
 	tracLinkStr string,
 	markdownLinkStr string) {
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImage(tracLinkStr), markdownImage(markdownLinkStr))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(tracLinkStr, additionalImageLink), markdownImageWithLink(markdownLinkStr, additionalImageLink))
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(additionalImageLink, tracLinkStr), markdownImageWithLink(additionalImageLink, markdownLinkStr))
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImage(tracLinkStr), markdownImage(markdownLinkStr), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImage(tracLinkStr), markdownImage(markdownLinkStr), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(tracLinkStr, additionalImageLink), markdownImageWithLink(markdownLinkStr, additionalImageLink), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(tracLinkStr, additionalImageLink), markdownImageWithLink(markdownLinkStr, additionalImageLink), false)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(additionalImageLink, tracLinkStr), markdownImageWithLink(additionalImageLink, markdownLinkStr), true)
+	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImageWithLink(additionalImageLink, tracLinkStr), markdownImageWithLink(additionalImageLink, markdownLinkStr), false)
 }
 
 const httpLink = "http://www.example.com"
