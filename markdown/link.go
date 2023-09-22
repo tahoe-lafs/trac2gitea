@@ -26,7 +26,7 @@ var (
 	singleBracketLinkRegexp = regexp.MustCompile(`\[([[:alpha:]][^ \]]*)(?: +([^\]]+))?\]`)
 
 	// regexp for 'http://...' and 'https://...' links
-	httpLinkRegexp = regexp.MustCompile(`https?://[[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+`)
+	httpLinkRegexp = regexp.MustCompile(`https?://[[:alnum:]\-._~:/?#@!$&'"()*+,;%=]*[[:alnum:]]`)
 
 	// regexp for trac 'htdocs:<link>': $1=link
 	htdocsLinkRegexp = regexp.MustCompile(`htdocs:([[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+)`)
@@ -65,20 +65,22 @@ var (
 	//       - a ']' constitutes the end of the link comment after conversion of the various trac bracketting syntaxes above
 	wikiCamelCaseLinkRegexp = regexp.MustCompile(`([[:space:]\x{200B}\]]|\A)((?:[[:upper:]][[:lower:]]+){2,})(?:#([[:alnum:]?/:@\-._\~!$&'()*+,;=]+))?`)
 
-	// regexp for recognising a "marked" link with no accompanying text: $1=leading chars, $2=link
-	noTextMarkedLinkRegexp = regexp.MustCompile(`((?:[^!]\[\])|[^\]])\(@@([^@]+)@@\)`)
+	// regexp for recognising a "marked" link with no accompanying text: $1=leading char, $2=link
+	noTextMarkedLinkRegexp = regexp.MustCompile(`([^\]])\(@@([^@]+)@@\)`)
 
-	// regexp for recognising a "marked" link with accompanying text: $1=link
-	textMarkedLinkRegexp = regexp.MustCompile(`\(@@([^@]+)@@\)`)
+	// regexp for recognising a "marked" link: $1=link
+	markedLinkRegexp = regexp.MustCompile(`\(@@([^@]+)@@\)`)
 
 	// zero-width space for separating debracketted links from trailing text, until they are converted to proper markdown
 	zeroWidthSpace = "\u200B"
 )
 
-// link resolution functions:
-// 	These are responsible for extracting link information from its appropriate Trac link regexp and preparing that link for conversion to markdown.
+// Link resolution functions:
+
+//	These are responsible for extracting link information from its appropriate Trac link regexp and preparing that link for conversion to markdown.
 //	The portion of the returned text corresponding to the link itself (as opposed to any extraneous characters that may have been hoovered up by the regexp)
-//  should be "marked" using the markLink() function to identify it for later processing.
+//	should be "marked" using the markLink() function to identify it for later processing.
+
 func (converter *DefaultConverter) resolveHTTPLink(link string) string {
 	return markLink(link)
 }
@@ -295,7 +297,7 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string 
 		text := doubleBracketLinkRegexp.ReplaceAllString(match, "$2")
 
 		if text == "" {
-			// special case: '[[br]]' is a page break in Trac and is dealt with elsewhere
+			// '[[br]]' is a page break in Trac and is dealt with elsewhere
 			if strings.EqualFold(link, "br") {
 				return match
 			}
@@ -310,9 +312,12 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string 
 		link := singleBracketLinkRegexp.ReplaceAllString(match, "$1")
 		text := singleBracketLinkRegexp.ReplaceAllString(match, "$2")
 
-		// special case: '[br]' can be assumed to be the inner section of a '[[br]]' and is a page break in Trac which is dealt with elsewhere
-		if text == "" && strings.EqualFold(link, "br") {
-			return match
+		if text == "" {
+			// '[br]' can be assumed to be the inner section of a '[[br]]'
+			if strings.EqualFold(link, "br") {
+				return match
+			}
+			return zeroWidthSpace + link + zeroWidthSpace
 		}
 
 		return "[" + text + "]" + link + zeroWidthSpace
@@ -383,18 +388,22 @@ func markLink(in string) string {
 func (converter *DefaultConverter) unmarkLinks(in string) string {
 	out := in
 	out = noTextMarkedLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		// (marked) links with no accompanying comment are converted into markdown "automatic" links
-		leadingChars := noTextMarkedLinkRegexp.ReplaceAllString(match, `$1`)
+		// first replace (marked) links with no accompanying comment
+		leadingChar := noTextMarkedLinkRegexp.ReplaceAllString(match, `$1`)
 		markdownURL := noTextMarkedLinkRegexp.ReplaceAllString(match, `$2`)
 
-		// need to replace any leading chars except for any square brackets forming the empty link text
-		prefix := strings.Replace(leadingChars, "[]", "", 1)
-		return prefix + "<" + markdownURL + ">"
+		// if the link is a plain http(s) link, use a markdown automatic link
+		if httpLinkRegexp.MatchString(markdownURL) {
+			return leadingChar + "<" + markdownURL + ">"
+		}
+
+		// else, it is necessary to use a regular link, using the URL as accompanying comment
+		return leadingChar + "[" + markdownURL + "]" + "(" + markdownURL + ")"
 	})
 
-	out = textMarkedLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
+	out = markedLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
 		// any remaining (marked) links must have an accompanying comment so are converted into normal markdown links
-		markdownURL := textMarkedLinkRegexp.ReplaceAllString(match, `$1`)
+		markdownURL := markedLinkRegexp.ReplaceAllString(match, `$1`)
 		return "(" + markdownURL + ")"
 	})
 

@@ -97,14 +97,26 @@ func verifyAllLinkTypes(
 	tearDownFn func(t *testing.T),
 	convertFn func(tracText string) string,
 	tracLinkStr string,
-	markdownLinkStr string) {
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+	markdownLinkStr string,
+	testAutomaticLinks ...bool) {
+
+	// use testAutomaticLinks when the tested link should work without accompanying text
+	if len(testAutomaticLinks) > 0 {
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
+	} else {
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
+	}
+
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), true)
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), false)
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
-	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), true)
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), false)
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracImage(tracLinkStr), markdownImage(markdownLinkStr), true)
@@ -118,13 +130,13 @@ func verifyAllLinkTypes(
 const httpLink = "http://www.example.com"
 
 func TestHttpLinks(t *testing.T) {
-	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpLink, httpLink)
+	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpLink, httpLink, true)
 }
 
 const httpsLink = "https://www.example.com"
 
 func TestHttpsLink(t *testing.T) {
-	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpsLink, httpsLink)
+	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpsLink, httpsLink, true)
 }
 
 const (
