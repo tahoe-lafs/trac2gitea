@@ -54,9 +54,9 @@ var (
 	// regexp for a trac 'ticket:<ticketID>' link: $1=ticketID
 	ticketLinkRegexp = regexp.MustCompile(`ticket:([[:digit:]]+)`)
 
-	// regexp for trac 'wiki:<CamelCase>#<anchor>' links: $1=CamelCase $2=anchor
-	// note: rules on what constitutes "CamelCase" are more lax than for plain <CamelCase> variant
-	wikiLinkRegexp = regexp.MustCompile(`wiki:((?:[[:upper:]][[:lower:]]*)+)(?:#([[:alnum:]?/:@\-._\~!$&'()*+,;=]+))?`)
+	// regexp for trac 'wiki:<page>#<anchor>' links: $1=page $2=anchor
+	// note: page does not need to be in proper CamelCase in this variant, but its last character should be alphanumeric
+	wikiLinkRegexp = regexp.MustCompile(`wiki:([[:alnum:]:\-._&']*[[:alnum:]])(?:#([[:alnum:]?/:@\-._\~!$&'*+,;=]+))?`)
 
 	// regexp for trac '<CamelCase>#anchor' wiki links: $1=leading char, $2=CamelCase $3=anchor
 	// note: leading char (if any) must be a space or ']'
