@@ -31,6 +31,10 @@ var (
 	// regexp for trac 'htdocs:<link>': $1=link
 	htdocsLinkRegexp = regexp.MustCompile(`htdocs:([[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+)`)
 
+	// regexp for local filenames used in Images (not explicit enough to be handled as attachment: or htdocs: links)
+	// must match exactly
+	localFileLinkRegexp = regexp.MustCompile(`^[[:alnum:]-._,]+\.[[:alpha:]]+$`)
+
 	// regexp for a trac 'comment:<commentNum>' and 'comment:<commentNum>:ticket:<ticketID>' link: $1=commentNum, $2=ticketID
 	ticketCommentLinkRegexp = regexp.MustCompile(`comment:([[:digit:]]+)(?::ticket:([[:digit:]]+))?`)
 
@@ -276,7 +280,7 @@ func (converter *DefaultConverter) resolveWikiCamelCaseLink(link string) string 
 // convertBrackettedTracLinks converts the various forms of (square) bracketted Trac links into an unbracketted form.
 // The conversion performed here is partial: this method is solely responsible for disposing of the Trac bracketting
 // - any resolution of actual trac links is done later
-func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string {
+func (converter *DefaultConverter) convertBrackettedTracLinks(wikiPage string, in string) string {
 	out := in
 
 	out = doubleBracketImageLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
@@ -284,6 +288,12 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(in string) string 
 		// - it will get dealt with later
 		image := doubleBracketImageLinkRegexp.ReplaceAllString(match, "$1")
 		link := doubleBracketImageLinkRegexp.ReplaceAllString(match, "$2")
+
+		// If the image is just a local filename, we have to get its path, and mark that as a processed link
+		if localFileLinkRegexp.MatchString(image) {
+			image = markLink(converter.giteaAccessor.GetWikiAttachmentRelPath(wikiPage, image))
+		}
+
 		if link == "" {
 			return "![]" + image + zeroWidthSpace
 		}
@@ -417,7 +427,7 @@ func (converter *DefaultConverter) convertLinks(ticketID int64, wikiPage string,
 
 	// conversion occurs in three distinct phases with each phase dealing with one part of the link syntax
 	// and leaving the remainder for the next stage
-	out = converter.convertBrackettedTracLinks(out)
+	out = converter.convertBrackettedTracLinks(wikiPage, out)
 	out = converter.convertUnbrackettedTracLinks(ticketID, wikiPage, out)
 	out = converter.unmarkLinks(out)
 	return out
