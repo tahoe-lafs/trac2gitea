@@ -244,7 +244,6 @@ func (accessor *DefaultAccessor) getDbDialect() (gorm.Dialector, string, error) 
 	dbPassword := accessor.GetStringConfig("database", "PASSWD")
 	dbHost := accessor.GetStringConfig("database", "HOST")
 	dbSslMode := accessor.GetStringConfig("database", "SSL_MODE")
-	dbCharset := accessor.GetStringConfig("database", "CHARSET")
 
 	switch dbType {
 	case "sqlite3":
@@ -256,7 +255,7 @@ func (accessor *DefaultAccessor) getDbDialect() (gorm.Dialector, string, error) 
 			dbCharset = "utf8mb4"
 		}
 		connstr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local",
-			url.PathEscape(dbUser), url.PathEscape(dbPassword), dbHost, dbName, dbCharset)
+			url.PathEscape(dbUser), url.PathEscape(dbPassword), dbHost, dbName)
 		dialect = mysql.Open(connstr)
 
 	case "postgres":
