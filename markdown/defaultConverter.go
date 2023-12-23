@@ -60,15 +60,19 @@ func (converter *DefaultConverter) convert(ticketID int64, wikiPage string, in s
 	// ensure we have Unix EOLs
 	out = converter.convertEOL(out)
 
+	// convert Trac "code blocks"
+	// - some of them are converted to HTML tags
+	// - others are actual code blocks, inside which the Trac syntax must not be converted - mark
+	// those with custom brackets
+	out = converter.convertCodeBlocks(out)
+
 	// perform conversions on text not in a code block using the ticket-specific link conversion
 	out = converter.convertNonCodeBlocks(out, func(in string) string {
 		return converter.convertNonCodeBlockText(ticketID, wikiPage, in)
 	})
 
-	// finally, convert any code blocks
-	// - this must be done after the non-code block conversions otherwise code blocks would get converted
-	// and we wouldn't be able to recognise the code block boundaries
-	out = converter.convertCodeBlocks(out)
+	// finally, replace custom brackets with markdown code block boundaries
+	out = converter.undisguiseCodeBlocks(out)
 
 	return out
 }
