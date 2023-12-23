@@ -6,43 +6,159 @@ package markdown
 
 import (
 	"regexp"
+	"strings"
+
+	"github.com/stevejefferson/trac2gitea/log"
 )
 
-var singleLineCodeBlockRegexp = regexp.MustCompile(`{{{([^\n]+?)}}}`)
-var multiLineCodeBlockRegexp = regexp.MustCompile(`(?m)^{{{(?s)(.+?)^}}}`)
-var nonCodeBlockRegexp = regexp.MustCompile(`(?m)(?:}}}$|\A)(?s)(.+?)(?:^{{{|\z)`)
-var commitTicketRefRegexp = regexp.MustCompile(`(?m)\x60\x60\x60\n?#!Commit.*\n`)
-var langRegexp = regexp.MustCompile(`(?m)\x60\x60\x60\n?#!(c|c\+\+|ps1|php|py|sh|cpp|pl)\n`)
+// Code blocks are disguised with {@{@{...}@}@} in order to avoid Trac syntax conversion inside
+var nonCodeBlockRegexp = regexp.MustCompile(`(?m)(?:}@}@}$|\A)(?s)(.+?)(?:^{@{@{|\z)`)
+
+var singleLineCodeBlockRegexp = regexp.MustCompile(`{@{@{([^\n]+?)}@}@}`)
+
+var codeBlockBoundaryRegexp = regexp.MustCompile(`{{{|}}}`)
+var tracProcessorRegexp = regexp.MustCompile(`^\s*#!(\w[^\n]*)?`)
+
+var htmlTags = []string{"div", "span", "td", "th", "tr", "table"}
+
+var codeLangs = []string{"c", "c++", "ps1", "php", "py", "sh", "cpp", "pl"}
 var langMap = map[string]string{"c++": "cpp"}
 
-func (converter *DefaultConverter) convertCodeBlocks(in string) string {
-	// convert single line {{{...}}} to `...`
-	out := singleLineCodeBlockRegexp.ReplaceAllString(in, "`$1`")
+// Parse code blocks delimited by triple curly brackets, converting them to raw HTML if applicable
+// Else, convert them to disguised code block boundaries allowing us to preserve their contents
+// See WikiProcessors for the Trac syntax details
+func (converter *DefaultConverter) parseCodeBlocks(in string, accumulated []string) string {
 
-	// convert multi-line {{{...}}} to ```-delimited lines
-	// - we leave in place any Trac '#!...' sequences following the opening '{{{'
-	//   since we have no easy way of dealing with these and they are best left in place
-	//   as a reminder to review them in the Gitea world
-	out = multiLineCodeBlockRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		text := multiLineCodeBlockRegexp.ReplaceAllString(match, `$1`)
-		return "```" + text + "```"
-	})
+	// This function receives a remaining `in` text and a list of currently opened code blocks
 
-	// but remove #!CommitTicketReference repository="" revision=""
-	out = commitTicketRefRegexp.ReplaceAllString(out, "```\n")
+	// Do nothing if there are no curly braces in the remaining text. There shouldn't remain any pending triple brackets.
+	if !codeBlockBoundaryRegexp.MatchString(in) {
+		if len(accumulated) > 0 {
+			log.Error("Parsing issue during markdown conversion of code blocks. Some opening triple brackets are not closed.")
+		}
 
-	// and fixup some common languages
-	out = langRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		if matches := langRegexp.FindStringSubmatch(match); matches != nil {
-			if lang, found := langMap[matches[1]]; found {
-				return langRegexp.ReplaceAllString(match, "```"+lang+"\n")
-			} else {
-				return langRegexp.ReplaceAllString(match, "```$1\n")
+		return in
+	}
+
+	// Split the text around the next boundary.
+	surroundings := codeBlockBoundaryRegexp.Split(in, 2)
+	beforeBoundary := surroundings[0]
+	afterBoundary := surroundings[1]
+	convertedBoundary := ""
+	newAccumulated := accumulated
+
+	// Deal with a new block opening
+	if codeBlockBoundaryRegexp.FindString(in) == "{{{" {
+		// Default values for unknown processors as well as simple {{{
+		convertedBoundary = "{@{@{"
+		blockType := ""
+		tracProcessor := ""
+
+		// Identify the processor if there is one after the opening
+		if match := tracProcessorRegexp.FindStringSubmatch(afterBoundary); match != nil {
+			tracProcessor = match[1]
+			afterBoundary = tracProcessorRegexp.Split(afterBoundary, 2)[1]
+		}
+		// get rid of CommitTicketReference processors
+		if strings.HasPrefix(tracProcessor, "CommitTicketReference") {
+			tracProcessor = ""
+		}
+		// (in which case it will be kept after the converted opening by default)
+		if tracProcessor != "" {
+			convertedBoundary += "#!" + tracProcessor
+		}
+
+		// If the processor is a known language, do not keep the #! mark
+		// Convert the lang to the supported gitea version if needed
+		for _, codeLang := range codeLangs {
+			if strings.TrimSpace(tracProcessor) == codeLang {
+				lang := codeLang
+				if fixedLang, found := langMap[lang]; found {
+					lang = fixedLang
+				}
+				convertedBoundary = "{@{@{" + lang
 			}
 		}
 
-		return match
-	})
+		// If it is a supported html tag, replace the opening by a <tag>
+		for _, tag := range htmlTags {
+			if strings.HasPrefix(tracProcessor, tag) {
+				blockType = tag
+				convertedBoundary = "<" + tracProcessor + ">"
+				break
+			}
+		}
+
+		// If it is a comment, replace the opening by the start of an HTML comment
+		if strings.HasPrefix(tracProcessor, "comment") || strings.HasPrefix(tracProcessor, "htmlcomment") {
+			blockType = "comment"
+			convertedBoundary = "<!---"
+		}
+
+		// If it is a #!html processor, just remove the block marks: the contents of this block shouldn't be converted
+		// (this must be checked after #!htmlcomment)
+		if strings.HasPrefix(tracProcessor, "html") {
+			blockType = "html"
+			convertedBoundary = ""
+		}
+
+		// Remember that we opened a new block
+		newAccumulated = append(accumulated, blockType)
+	}
+
+	// Deal with a block closing
+	if codeBlockBoundaryRegexp.FindString(in) == "}}}" {
+		// We are closing the lastly opened block. If we are not inside one, do not convert or disguise these braces.
+		if len(accumulated) == 0 {
+			return beforeBoundary + "}}}" + converter.parseCodeBlocks(afterBoundary, accumulated)
+		}
+		blockType := accumulated[len(accumulated)-1]
+
+		// By default, this will become a closing triple bracket
+		convertedBoundary = "}@}@}"
+
+		// If we are closing a supported html tag, replace the closing by a </tag>
+		for _, tag := range htmlTags {
+			if blockType == tag {
+				convertedBoundary = "</" + tag + ">"
+			}
+		}
+
+		// If we are closing a comment, replace the closing by the end of an HTML comment
+		if blockType == "comment" {
+			convertedBoundary = "-->"
+		}
+
+		// If we are closing a #!html processor, just remove the block marks
+		if blockType == "html" {
+			convertedBoundary = ""
+		}
+
+		// This block is now closed
+		newAccumulated = accumulated[:len(accumulated)-1]
+	}
+
+	// Continue parsing the rest of the text using recursion
+	// This is guaranteed to end as `afterBoundary` is strictly shorter than `in`
+	return beforeBoundary + convertedBoundary + converter.parseCodeBlocks(afterBoundary, newAccumulated)
+}
+
+func (converter *DefaultConverter) convertCodeBlocks(in string) string {
+
+	// convert all {{{...}}} to html or to disguised triple brackets, depending on
+	// specified Trac processors (see WikiProcessors)
+	acc := []string{}
+	return converter.parseCodeBlocks(in, acc)
+}
+
+func (converter *DefaultConverter) undisguiseCodeBlocks(in string) string {
+
+	// convert single line {{{...}}} to `...`
+	out := singleLineCodeBlockRegexp.ReplaceAllString(in, "`$1`")
+
+	// convert other brackets to ```
+	out = strings.ReplaceAll(out, "{@{@{", "```")
+	out = strings.ReplaceAll(out, "}@}@}", "```")
 
 	return out
 }
