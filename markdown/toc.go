@@ -6,7 +6,7 @@ package markdown
 
 import "regexp"
 
-var tocRegexp = regexp.MustCompile(`\[\[TOC\]\]\n+`)
+var tocRegexp = regexp.MustCompile(`\[\[TOC(?:\(.*\))?\]\]\s*`)
 
 func (converter *DefaultConverter) removeTOC(in string) string {
 	// Remove [[TOC]] special mark
