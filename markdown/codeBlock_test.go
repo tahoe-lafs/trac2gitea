@@ -124,7 +124,9 @@ func TestHTMLTag(t *testing.T) {
 	assertEquals(t, conversion,
 		leadingText+"\n"+
 			"<table>\n"+
+			"\n"+
 			contents+
+			"\n"+
 			"</table>\n"+
 			trailingText)
 }
@@ -145,7 +147,9 @@ func TestHTMLTagWithSingleParam(t *testing.T) {
 	assertEquals(t, conversion,
 		leadingText+"\n"+
 			"<div id=\"test\">\n"+
+			"\n"+
 			contents+
+			"\n"+
 			"</div>\n"+
 			trailingText)
 }
@@ -159,15 +163,17 @@ func TestHTMLTagWithMultipleParams(t *testing.T) {
 	conversion := converter.WikiConvert(
 		wikiPage,
 		leadingText+"\n"+
-			"{{{#!span class=\"test\" style=\"color: red; font-size: 90%\"\n"+
+			"{{{#!div class=\"test\" style=\"color: red; font-size: 90%\"\n"+
 			contents+
 			"}}}\n"+
 			trailingText)
 	assertEquals(t, conversion,
 		leadingText+"\n"+
-			"<span class=\"test\" style=\"color: red; font-size: 90%\">\n"+
+			"<div class=\"test\" style=\"color: red; font-size: 90%\">\n"+
+			"\n"+
 			contents+
-			"</span>\n"+
+			"\n"+
+			"</div>\n"+
 			trailingText)
 }
 
@@ -184,43 +190,57 @@ func TestNestedHTML(t *testing.T) {
 		wikiPage,
 		leadingText+"\n"+
 			"{{{#!table\n"+
-			"\t{{{#!tr\n"+
-			"\t\t{{{#!th\n"+
+			"{{{#!tr\n"+
+			"{{{#!th\n"+
 			head1+
-			"\t\t}}}\n"+
-			"\t\t{{{#!td\n"+
+			"}}}\n"+
+			"{{{#!td\n"+
 			content1+
-			"\t\t}}}\n"+
-			"\t}}}\n"+
-			"\t{{{#!tr\n"+
-			"\t\t{{{#!th\n"+
+			"}}}\n"+
+			"}}}\n"+
+			"{{{#!tr\n"+
+			"{{{#!th\n"+
 			head2+
-			"\t\t}}}\n"+
-			"\t\t{{{#!td\n"+
+			"}}}\n"+
+			"{{{#!td\n"+
 			content2+
-			"\t\t}}}\n"+
-			"\t}}}\n"+
+			"}}}\n"+
+			"}}}\n"+
 			"}}}\n"+
 			trailingText)
 	assertEquals(t, conversion,
 		leadingText+"\n"+
 			"<table>\n"+
-			"\t<tr>\n"+
-			"\t\t<th>\n"+
+			"\n"+
+			"<tr>\n"+
+			"\n"+
+			"<th>\n"+
+			"\n"+
 			head1+
-			"\t\t</th>\n"+
-			"\t\t<td>\n"+
+			"\n"+
+			"</th>\n"+
+			"<td>\n"+
+			"\n"+
 			content1+
-			"\t\t</td>\n"+
-			"\t</tr>\n"+
-			"\t<tr>\n"+
-			"\t\t<th>\n"+
+			"\n"+
+			"</td>\n"+
+			"\n"+
+			"</tr>\n"+
+			"<tr>\n"+
+			"\n"+
+			"<th>\n"+
+			"\n"+
 			head2+
-			"\t\t</th>\n"+
-			"\t\t<td>\n"+
+			"\n"+
+			"</th>\n"+
+			"<td>\n"+
+			"\n"+
 			content2+
-			"\t\t</td>\n"+
-			"\t</tr>\n"+
+			"\n"+
+			"</td>\n"+
+			"\n"+
+			"</tr>\n"+
+			"\n"+
 			"</table>\n"+
 			trailingText)
 }
@@ -376,10 +396,12 @@ func TestConversionInsideHTMLBlock(t *testing.T) {
 	assertEquals(t, conversion,
 		leadingText+"\n"+
 			"<td>\n"+
+			"\n"+
 			mdLine1+
 			mdLine2+
 			mdLine3+
 			mdLine4+
+			"\n"+
 			"</td>\n"+
 			trailingText)
 }
