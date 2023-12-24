@@ -26,7 +26,7 @@ var (
 	singleBracketLinkRegexp = regexp.MustCompile(`\[([[:alpha:]][^ \]]*)(?: +([^\]]+))?\]`)
 
 	// regexp for 'http://...' and 'https://...' links
-	httpLinkRegexp = regexp.MustCompile(`https?://[[:alnum:]\-._~:/?#@!$&'"()*+,;%=]*[[:alnum:]]`)
+	httpLinkRegexp = regexp.MustCompile(`https?://[[:alnum:]\-._~:/?#@!$&'"()*+,;%=]*[[:alnum:]/]`)
 
 	// regexp for trac 'htdocs:<link>': $1=link
 	htdocsLinkRegexp = regexp.MustCompile(`htdocs:([[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+)`)
