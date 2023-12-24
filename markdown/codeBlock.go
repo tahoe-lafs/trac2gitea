@@ -19,7 +19,9 @@ var singleLineCodeBlockRegexp = regexp.MustCompile(`{@{@{([^\n]+?)}@}@}`)
 var codeBlockBoundaryRegexp = regexp.MustCompile(`{{{|}}}`)
 var tracProcessorRegexp = regexp.MustCompile(`^\s*#!(\w[^\n]*)?`)
 
-var htmlTags = []string{"div", "span", "td", "th", "tr", "table"}
+// We support block-style HTML tags, for which we add an empty line between the tags
+// and the content which might be Markdown
+var htmlTags = []string{"div", "td", "th", "tr", "table"}
 
 var codeLangs = []string{"c", "c++", "ps1", "php", "py", "sh", "cpp", "pl"}
 var langMap = map[string]string{"c++": "cpp"}
@@ -81,10 +83,11 @@ func (converter *DefaultConverter) parseCodeBlocks(in string, accumulated []stri
 		}
 
 		// If it is a supported html tag, replace the opening by a <tag>
+		// followed by an empty line
 		for _, tag := range htmlTags {
 			if strings.HasPrefix(tracProcessor, tag) {
 				blockType = tag
-				convertedBoundary = "<" + tracProcessor + ">"
+				convertedBoundary = "<" + tracProcessor + ">\n"
 				break
 			}
 		}
@@ -95,8 +98,8 @@ func (converter *DefaultConverter) parseCodeBlocks(in string, accumulated []stri
 			convertedBoundary = "<!---"
 		}
 
-		// If it is a #!html processor, just remove the block marks: the contents of this block shouldn't be converted
-		// (this must be checked after #!htmlcomment)
+		// If it is a #!html processor, replace the block by an empty line to preserve functionality
+		// in Markdown (this must be checked after #!htmlcomment)
 		if strings.HasPrefix(tracProcessor, "html") {
 			blockType = "html"
 			convertedBoundary = ""
@@ -117,10 +120,10 @@ func (converter *DefaultConverter) parseCodeBlocks(in string, accumulated []stri
 		// By default, this will become a closing triple bracket
 		convertedBoundary = "}@}@}"
 
-		// If we are closing a supported html tag, replace the closing by a </tag>
+		// If we are closing a supported html tag, replace the closing by an empty line and a </tag>
 		for _, tag := range htmlTags {
 			if blockType == tag {
-				convertedBoundary = "</" + tag + ">"
+				convertedBoundary = "\n</" + tag + ">"
 			}
 		}
 
