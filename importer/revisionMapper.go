@@ -9,7 +9,7 @@ import (
 var (
 	revisionRangeRegexp = regexp.MustCompile(`(^|[^\w]\s*)(r\d+)-(?:r)?(\d+)`)
 	revisionRegexp      = regexp.MustCompile(`(^|[^\w]\s*)(r\d+)`)
-	changesetRegexp     = regexp.MustCompile(`In \[(\d+)\]changeset:"\d+":`)
+	changesetRegexp     = regexp.MustCompile(`In (?:\[\d+\])?changeset:"?(\d+)"?:`)
 )
 
 func mapRevision(in string, revisionMap map[string]string) string {

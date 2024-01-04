@@ -88,6 +88,34 @@ func TestMapCommitReference(t *testing.T) {
 	}
 }
 
+func TestMapOldStyleCommitReference(t *testing.T) {
+	revisionMap := map[string]string{
+		"r4485": "deadf00d",
+	}
+	input := `In changeset:"4485":`
+	expected := `See deadf00d`
+
+	result := importer.MapRevisions(input, revisionMap)
+
+	if result != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, result)
+	}
+}
+
+func TestMapOlderStyleCommitReference(t *testing.T) {
+	revisionMap := map[string]string{
+		"r4485": "deadf00d",
+	}
+	input := `In changeset:4485:`
+	expected := `See deadf00d`
+
+	result := importer.MapRevisions(input, revisionMap)
+
+	if result != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, result)
+	}
+}
+
 func TestMapMergeRange(t *testing.T) {
 	revisionMap := map[string]string{
 		"r4415": "deadf00d",
