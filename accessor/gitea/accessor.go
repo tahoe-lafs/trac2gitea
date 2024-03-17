@@ -254,8 +254,10 @@ type Accessor interface {
 	/*
 	 * Issue Comments
 	 */
-	// GetIssueCommentIDsByTime retrieves the IDs of all comments created at a given time for a given issue
-	GetIssueCommentIDsByTime(issueID int64, createdTime int64) ([]int64, error)
+	// GetIssueCommentIDByTime retrieves the ID of the comment created at a given time for a given issue.
+	// Since different issue changes can happen at the same time, this tries to return the "comment" type
+	// change, or falls back to another type by increasing IssueCommentType.
+	GetIssueCommentIDByTime(issueID int64, createdTime int64) (int64, error)
 
 	// AddIssueComment adds a comment on a Gitea issue, returns id of created comment
 	AddIssueComment(issueID int64, comment *IssueComment) (int64, error)

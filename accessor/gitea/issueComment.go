@@ -12,21 +12,31 @@ import (
 	"github.com/stevejefferson/trac2gitea/log"
 )
 
-// GetIssueCommentIDsByTime retrieves the IDs of all comments created at a given time for a given issue
-func (accessor *DefaultAccessor) GetIssueCommentIDsByTime(issueID int64, createdTime int64) ([]int64, error) {
+// GetIssueCommentIDByTime retrieves the ID of the comment created at a given time for a given issue.
+// Since different issue changes can happen at the same time, this tries to return the "comment" type
+// change, or falls back to another type by increasing IssueCommentType.
+func (accessor *DefaultAccessor) GetIssueCommentIDByTime(issueID int64, createdTime int64) (int64, error) {
+	// Note: Trac stores timestamps with greater precision than Gitea, so it is possible multiple "comment" type
+	// changes are returned in the query, but this is unlikely.
 	var commentIDs = []int64{}
 	err := accessor.db.Model(&IssueComment{}).
 		Select("id").
 		Where("issue_id=? AND created_unix=?", issueID, createdTime).
+		Order("type ASC").
 		Find(&commentIDs).
 		Error
 
 	if err != nil {
 		err = errors.Wrapf(err, "retrieving ids of comments created at \"%s\" for issue %d", time.Unix(createdTime, 0), issueID)
-		return []int64{}, err
+		return -1, err
 	}
 
-	return commentIDs, nil
+	if len(commentIDs) == 0 {
+		log.Error("could not find issue comment at %s for issue %d", time.Unix(createdTime, 0), issueID)
+		return -1, nil
+	}
+
+	return commentIDs[0], nil
 }
 
 // updateIssueComment updates an existing issue comment
@@ -59,39 +69,38 @@ func (accessor *DefaultAccessor) insertIssueComment(issueID int64, comment *Issu
 	return comment.ID, nil
 }
 
-var prevIssueID = NullID
-var prevCommentTime = int64(0)
-var issueCommentIDIndex = 0
-var issueCommentIDs = []int64{}
+// findIssueComment checks for the existence and ID of a comment with the same timestamp and change type in the given issue
+func (accessor *DefaultAccessor) findIssueComment(issueID int64, createdTime int64, commentType IssueCommentType) (int64, error) {
+	var commentIDs = []int64{}
+	err := accessor.db.Model(&IssueComment{}).
+		Select("id").
+		Where("issue_id=? AND created_unix=? AND type=?", issueID, createdTime, commentType).
+		Find(&commentIDs).
+		Error
+
+	if err != nil {
+		err = errors.Wrapf(err, "retrieving ids of comments created at \"%s\" for issue %d", time.Unix(createdTime, 0), issueID)
+		return -1, err
+	}
+
+	if len(commentIDs) == 0 {
+		return -1, nil
+	}
+
+	return commentIDs[0], nil
+}
 
 // AddIssueComment adds a comment on a Gitea issue, returns id of created comment
 func (accessor *DefaultAccessor) AddIssueComment(issueID int64, comment *IssueComment) (int64, error) {
-	var err error
-
-	// HACK:
-	// Timestamps associated with Gitea comments are not necessarily unique for comments originating from Trac
-	// because Trac stores timestamps to a greater precision which we have to round to Gitea's precision.
-	// Unfortunately timestamp is the best key we have for identifying whether a particular issue comment already exists
-	// (and hence whether we need to insert or update it).
-	// We get round this by observing that comments are always added consecutively for a given issue so we can
-	// cache all comment IDs for our current issue and timestamp and extract the subsequent entries from that list.
-	if issueID != prevIssueID || comment.Time != prevCommentTime {
-		prevIssueID = issueID
-		prevCommentTime = comment.Time
-		issueCommentIDIndex = 0
-		issueCommentIDs, err = accessor.GetIssueCommentIDsByTime(issueID, comment.Time)
-		if err != nil {
-			return NullID, err
-		}
+	// Check whether a particular issue comment already exists (and hence whether we need to insert or update it).
+	issueCommentID, err := accessor.findIssueComment(issueID, comment.CreatedTime, comment.CommentType)
+	if err != nil {
+		return NullID, err
 	}
 
-	if issueCommentIDIndex >= len(issueCommentIDs) {
-		// should only happen where no issue comments for timestamp
+	if issueCommentID == -1 {
 		return accessor.insertIssueComment(issueID, comment)
 	}
-
-	issueCommentID := issueCommentIDs[issueCommentIDIndex]
-	issueCommentIDIndex++
 
 	if accessor.overwrite {
 		err := accessor.updateIssueComment(issueCommentID, issueID, comment)
@@ -99,7 +108,7 @@ func (accessor *DefaultAccessor) AddIssueComment(issueID int64, comment *IssueCo
 			return NullID, err
 		}
 	} else {
-		log.Debug("issue %d already has comment timed at %s - ignored", issueID, time.Unix(comment.Time, 0))
+		log.Info("issue %d already has comment timed at %s - ignored", issueID, time.Unix(comment.Time, 0))
 	}
 
 	return issueCommentID, nil
