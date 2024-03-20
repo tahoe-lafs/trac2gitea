@@ -15,20 +15,18 @@ func (importer *Importer) importTicket(ticket *trac.Ticket, closed bool, userMap
 	if err != nil {
 		return gitea.NullID, err
 	}
+	// Use the "original author" migration feature if the reporter cannot be mapped onto a Gitea user
+	originalAuthorName := ""
 	if reporterID == gitea.NullID {
 		reporterID = importer.defaultAuthorID
+		originalAuthorName = ticket.Reporter
 	}
 
-	// record Trac owner as original author if it cannot be mapped onto a Gitea user
 	ownerID := gitea.NullID
-	originalAuthorName := ticket.Owner
 	if ticket.Owner != "" {
 		ownerID, err = importer.getUserID(ticket.Owner, userMap)
 		if err != nil {
 			return gitea.NullID, err
-		}
-		if ownerID != gitea.NullID {
-			originalAuthorName = ""
 		}
 	}
 
