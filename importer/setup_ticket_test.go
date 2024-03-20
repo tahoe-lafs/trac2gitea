@@ -267,10 +267,10 @@ func expectDescriptionMarkdownConversion(t *testing.T, ticket *TicketImport) {
 }
 
 func expectIssueCreation(t *testing.T, ticket *TicketImport) {
-	// expect to record original trac user where ticket owner has no Gitea mapping
+	// expect to record original trac user where ticket reporter has no Gitea mapping
 	originalAuthorName := ""
-	if ticket.owner.giteaUser == "" {
-		originalAuthorName = ticket.owner.tracUser
+	if ticket.reporter.giteaUser == "" {
+		originalAuthorName = ticket.reporter.tracUser
 	}
 
 	mockGiteaAccessor.
