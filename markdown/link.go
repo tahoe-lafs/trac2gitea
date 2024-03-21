@@ -144,7 +144,7 @@ func (converter *DefaultConverter) resolveTicketCommentLink(ticketID int64, link
 		return link // not a recognised link - do not mark (error should already be logged)
 	}
 
-	commentURL := converter.giteaAccessor.GetIssueCommentURL(issueID, commentID)
+	commentURL := converter.giteaAccessor.GetIssueCommentURL(commentTicketID, commentID)
 	return markLink(commentURL)
 }
 

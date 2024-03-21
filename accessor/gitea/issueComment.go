@@ -115,7 +115,7 @@ func (accessor *DefaultAccessor) AddIssueComment(issueID int64, comment *IssueCo
 }
 
 // GetIssueCommentURL retrieves the URL for viewing a Gitea comment for a given issue.
-func (accessor *DefaultAccessor) GetIssueCommentURL(issueID int64, commentID int64) string {
+func (accessor *DefaultAccessor) GetIssueCommentURL(issueNumber int64, commentID int64) string {
 	repoURL := accessor.getUserRepoURL()
-	return fmt.Sprintf("%s/issues/%d#issuecomment-%d", repoURL, issueID, commentID)
+	return fmt.Sprintf("%s/issues/%d#issuecomment-%d", repoURL, issueNumber, commentID)
 }

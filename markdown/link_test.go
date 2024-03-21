@@ -303,7 +303,7 @@ func setUpTicketCommentLink(t *testing.T, tktID int64) {
 	// expect call to lookup URL of gitea comment
 	mockGiteaAccessor.
 		EXPECT().
-		GetIssueCommentURL(gomock.Eq(issueID), gomock.Eq(commentID)).
+		GetIssueCommentURL(gomock.Eq(tktID), gomock.Eq(commentID)).
 		Return(commentURL)
 }
 
