@@ -231,7 +231,9 @@ func (accessor *DefaultAccessor) GetTicketChanges(ticketID int64, handlerFn func
 func (accessor *DefaultAccessor) GetTicketCommentTime(ticketID int64, commentNum int64) (int64, error) {
 	timestamp := int64(0)
 	err := accessor.db.QueryRow(`
-		SELECT time FROM ticket_change where ticket = $1 AND oldvalue = $2 AND field = 'comment'`,
+		SELECT CAST(time*1e-6 AS int8)
+			FROM ticket_change
+			WHERE ticket = $1 AND oldvalue = $2 AND field = 'comment'`,
 		ticketID, commentNum).Scan(&timestamp)
 	if err != nil && err != sql.ErrNoRows {
 		err = errors.Wrapf(err, "retrieving Trac comment number %d for ticket %d", commentNum, ticketID)

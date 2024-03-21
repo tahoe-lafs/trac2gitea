@@ -263,7 +263,7 @@ type Accessor interface {
 	AddIssueComment(issueID int64, comment *IssueComment) (int64, error)
 
 	// GetIssueCommentURL retrieves the URL for viewing a Gitea comment for a given issue.
-	GetIssueCommentURL(issueID int64, commentID int64) string
+	GetIssueCommentURL(issueNumber int64, commentID int64) string
 
 	/*
 	 * Issue Labels
