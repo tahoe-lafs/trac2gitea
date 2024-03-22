@@ -71,8 +71,13 @@ func (importer *Importer) DefaultVersionLabelMap() (map[string]string, error) {
 
 // getLabelID retrieves the Gitea label ID corresponding to a Trac label name
 func (importer *Importer) getLabelID(tracName string, labelMap map[string]string) (int64, error) {
+	if tracName == "" {
+		return gitea.NullID, nil
+	}
+
 	giteaLabelName := labelMap[tracName]
 	if giteaLabelName == "" {
+		log.Warn("Trac label %s is not in labelmap", tracName)
 		return gitea.NullID, nil
 	}
 
