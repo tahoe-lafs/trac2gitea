@@ -24,6 +24,17 @@ func sqlForFieldList(fields []TicketChangeType) string {
 	return "(" + fieldListSQL + ")"
 }
 
+// sqlForFieldOrdering returns an SQL CASE expression allowing one to ORDER BY the provided order of field names.
+func sqlForFieldOrdering(fields []TicketChangeType) string {
+	fieldOrderSQL := ""
+	for fieldIndex, field := range fields {
+		fieldIndexStr := fmt.Sprintf("%d", fieldIndex)
+		fieldOrderSQL = fieldOrderSQL + " WHEN '" + string(field) + "' THEN " + fieldIndexStr
+	}
+
+	return "CASE field" + fieldOrderSQL + " END"
+}
+
 // sqlForFirstChangeToEachField returns the SQL for retrieving details of the first change to each of a set of fields of a ticket
 func sqlForFirstChangeToEachField(fields []TicketChangeType) string {
 	changeSQL := `
@@ -54,9 +65,12 @@ func sqlForTicketTableField(fieldIndex int, field TicketChangeType) string {
 		`
 }
 
+// The order of the list will correspond to the order of the initial changes.
+// Everything that will become Gitea label changes should be grouped together.
 var initialTicketChangeFields = []TicketChangeType{
-	TicketComponentChange, TicketMilestoneChange, TicketOwnerChange, TicketPriorityChange,
-	TicketResolutionChange, TicketSeverityChange, TicketTypeChange, TicketVersionChange,
+	TicketComponentChange, TicketPriorityChange, TicketResolutionChange,
+	TicketSeverityChange, TicketTypeChange, TicketVersionChange,
+	TicketMilestoneChange, TicketOwnerChange,
 }
 
 // getInitialTicketChanges generates a set of "synthetic" changes on a Trac ticket to model the assignments of its initial values
@@ -91,7 +105,8 @@ func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handler
 	for fieldIndex, field := range initialTicketChangeFields {
 		initialValueSQL = initialValueSQL + `UNION` + sqlForTicketTableField(fieldIndex, field)
 	}
-	initialValueSQL = initialValueSQL + `) ORDER BY source asc`
+	initialValueSQL = initialValueSQL + `)
+		ORDER BY ` + sqlForFieldOrdering(initialTicketChangeFields) + `, source ASC`
 
 	rows, err := accessor.db.Query(initialValueSQL, ticketID)
 	if err != nil {
@@ -144,12 +159,16 @@ func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handler
 	return nil
 }
 
+// The order of the list will correspond to the order of same-time changes.
+// Everything that will become Gitea label changes should be grouped together.
 var recordedTicketChangeFields = []TicketChangeType{
-	TicketComponentChange, TicketMilestoneChange, TicketOwnerChange, TicketPriorityChange, TicketResolutionChange,
-	TicketSeverityChange, TicketStatusChange, TicketSummaryChange, TicketTypeChange, TicketVersionChange,
+	TicketComponentChange, TicketPriorityChange, TicketResolutionChange,
+	TicketSeverityChange, TicketTypeChange, TicketVersionChange,
+	TicketMilestoneChange, TicketOwnerChange, TicketStatusChange, TicketSummaryChange,
 }
 
-// getRecordedTicketChanges retrieves all changes on a given ticket recorded by Trac in ascending time order, passing data from each to a "handler" function.
+// getRecordedTicketChanges retrieves all changes on a given ticket recorded by Trac in ascending time order,
+// ordering same-time changes with the specified order, passing data from each to a "handler" function.
 func (accessor *DefaultAccessor) getRecordedTicketChanges(ticketID int64, handlerFn func(change *TicketChange) error) error {
 	rows, err := accessor.db.Query(`
 		SELECT field, COALESCE(author, ''), COALESCE(oldvalue, ''), COALESCE(newvalue, ''), CAST(time*1e-6 AS int8)
@@ -159,7 +178,7 @@ func (accessor *DefaultAccessor) getRecordedTicketChanges(ticketID int64, handle
 				(field = '`+string(TicketCommentChange)+`' AND trim(COALESCE(newvalue, ''), ' ') != '')
 				OR field IN `+sqlForFieldList(recordedTicketChangeFields)+`
 			)
-			ORDER BY time asc`,
+			ORDER BY time ASC, `+sqlForFieldOrdering(recordedTicketChangeFields),
 		ticketID)
 	if err != nil {
 		err = errors.Wrapf(err, "retrieving Trac comments for ticket %d", ticketID)
