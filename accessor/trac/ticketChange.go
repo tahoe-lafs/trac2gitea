@@ -30,7 +30,6 @@ func sqlForFirstChangeToEachField(fields []TicketChangeType) string {
 		SELECT 1 source,
 			chg1.field field,
 			COALESCE(chg1.oldvalue, '') value,
-			COALESCE(chg1.author, '') author,
 			MIN(CAST(chg1.time*1e-6 AS int8)) time
 		FROM ticket_change chg1
 		WHERE chg1.ticket = $1
@@ -49,8 +48,7 @@ func sqlForTicketTableField(fieldIndex int, field TicketChangeType) string {
 		SELECT 2 source,
 			'` + strField + `' field,
 			COALESCE(` + table + `.` + strField + `, '') value,
-			COALESCE(` + table + `.owner, '') author,
-			CAST(` + table + `.time*1e-6 AS int8) time
+			0 time
 		FROM ticket ` + table + `
 		WHERE id=$1
 		`
@@ -66,6 +64,18 @@ var initialTicketChangeFields = []TicketChangeType{
 // This is necessary because Trac tickets can be assigned certain values (e.g. severity, type) on creation in contrast to Gitea where
 // these assignments must occur as specific issue changes. The synthetic changes here are used to trigger those Gitea issue changes.
 func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handlerFn func(change *TicketChange) error) error {
+	// The time and author of the initial changes are taken from the ticket table
+	var time int64
+	var reporter string
+	row := accessor.db.QueryRow(`
+		SELECT reporter, CAST(time*1e-6 AS int8)
+		FROM ticket
+		WHERE id=$1`, ticketID)
+	if err := row.Scan(&reporter, &time); err != nil {
+		err = errors.Wrapf(err, "retrieving reporter and creation time for ticket %d", ticketID)
+		return err
+	}
+
 	// The initial value for any field is found as follows:
 	// 1. in the 'oldvalue' of the earliest recorded change for the field
 	// 2. (if no recorded change for field) in the appropriate field of the main ticket table
@@ -74,10 +84,8 @@ func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handler
 	// - source: "source" of data - 1 or 2 (see above)
 	// - field: name of field
 	// - value: initial value for field
-	// - author: author for field
-	// - time: timestamp for value (converted to Gitea precision)
 	initialValueSQL := `
-		SELECT source, field, value, author, time FROM 
+		SELECT source, field, value FROM
 		(`
 	initialValueSQL = initialValueSQL + sqlForFirstChangeToEachField(initialTicketChangeFields)
 	for fieldIndex, field := range initialTicketChangeFields {
@@ -94,9 +102,8 @@ func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handler
 	var source1Fields = make(map[string]bool)
 	for rows.Next() {
 		var source int
-		var time int64
-		var field, author, value string
-		if err := rows.Scan(&source, &field, &value, &author, &time); err != nil {
+		var field, value string
+		if err := rows.Scan(&source, &field, &value); err != nil {
 			err = errors.Wrapf(err, "retrieving initial change for ticket %d", ticketID)
 			return err
 		}
@@ -124,7 +131,7 @@ func (accessor *DefaultAccessor) getInitialTicketChanges(ticketID int64, handler
 		change := TicketChange{
 			TicketID:   ticketID,
 			ChangeType: TicketChangeType(field),
-			Author:     author,
+			Author:     reporter,
 			OldValue:   "",
 			NewValue:   value,
 			Time:       time,
