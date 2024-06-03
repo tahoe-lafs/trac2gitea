@@ -1,3 +1,4 @@
+/.gocache
 accessor/mock_gitea
 accessor/mock_trac
 mock_markdown

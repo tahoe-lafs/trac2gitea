@@ -187,3 +187,16 @@ Missing dependencies can be fetched using:
 ```lang-none
 make deps
 ```
+
+## Docker
+
+In order to improve the reproducibility, one can leverage Docker:
+
+```
+docker compose build
+docker compose run --rm go-shell
+go version
+...
+make
+...
+```
