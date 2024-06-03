@@ -53,4 +53,4 @@ jobs:
       - name: Go make
         id: go_make
         run: |
-          docker compose run go-shell sh -c "make"
+          docker compose run go-shell sh -c "make mockdeps && make"

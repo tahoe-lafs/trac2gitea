@@ -63,7 +63,7 @@ accessor/mock_trac/accessor.go: accessor/trac/accessor.go
 	$(MOCKGEN) -destination=$@ $(ROOTPACKAGE)/$(<D) Accessor
 
 mockdeps:
-	GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.3
+	$(GOINSTALL) github.com/golang/mock/mockgen@v1.4.3
 
 mockclean:
 	rm -rf mock_markdown accessor/mock_gitea accessor/mock_giteawiki accessor/mock_trac
