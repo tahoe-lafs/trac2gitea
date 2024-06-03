@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/go-ini/ini v1.67.0
-	github.com/golang/mock v1.4.3
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/pflag v1.0.5

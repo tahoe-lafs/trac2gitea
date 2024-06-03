@@ -7,7 +7,7 @@ package markdown_test
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestSingleLineCodeBlock(t *testing.T) {
