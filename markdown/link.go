@@ -256,25 +256,41 @@ func (converter *DefaultConverter) resolveTicketLink(link string) string {
 	return markLink(issueURL)
 }
 
-func (converter *DefaultConverter) resolveWikiLink(link string) string {
+func (converter *DefaultConverter) resolveWikiLink(ticketID int64, wikiPage string, link string) string {
 	wikiPageName := wikiLinkRegexp.ReplaceAllString(link, `$1`)
 	wikiPageAnchor := wikiLinkRegexp.ReplaceAllString(link, `$2`)
 	translatedPageName := converter.giteaAccessor.TranslateWikiPageName(wikiPageName)
-	if wikiPageAnchor == "" {
-		return markLink(translatedPageName)
+	var prefix, suffix string
+	if ticketID != trac.NullID {
+		prefix = "wiki/"
+	} else if wikiPage != "" {
+		prefix = ""
 	}
-	return markLink(translatedPageName + "#" + wikiPageAnchor)
+	if wikiPageAnchor == "" {
+		suffix = ""
+	} else {
+		suffix = "#" + wikiPageAnchor
+	}
+	return markLink(prefix + translatedPageName + suffix)
 }
 
-func (converter *DefaultConverter) resolveWikiCamelCaseLink(link string) string {
+func (converter *DefaultConverter) resolveWikiCamelCaseLink(ticketID int64, wikiPage string, link string) string {
 	leadingChar := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$1`)
 	wikiPageName := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$2`)
 	wikiPageAnchor := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$3`)
 	translatedPageName := converter.giteaAccessor.TranslateWikiPageName(wikiPageName)
-	if wikiPageAnchor == "" {
-		return leadingChar + markLink(translatedPageName)
+	var prefix, suffix string
+	if ticketID != trac.NullID {
+		prefix = "wiki/"
+	} else if wikiPage != "" {
+		prefix = ""
 	}
-	return leadingChar + markLink(translatedPageName+"#"+wikiPageAnchor)
+	if wikiPageAnchor == "" {
+		suffix = ""
+	} else {
+		suffix = "#" + wikiPageAnchor
+	}
+	return leadingChar + markLink(prefix + translatedPageName + suffix)
 }
 
 // convertBrackettedTracLinks converts the various forms of (square) bracketted Trac links into an unbracketted form.
@@ -375,11 +391,11 @@ func (converter *DefaultConverter) convertUnbrackettedTracLinks(ticketID int64, 
 	})
 
 	out = wikiLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		return converter.resolveWikiLink(match)
+		return converter.resolveWikiLink(ticketID, wikiPage, match)
 	})
 
 	out = wikiCamelCaseLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		return converter.resolveWikiCamelCaseLink(match)
+		return converter.resolveWikiCamelCaseLink(ticketID, wikiPage, match)
 	})
 
 	return out
