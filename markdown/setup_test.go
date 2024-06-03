@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"github.com/stevejefferson/trac2gitea/accessor/mock_gitea"
 	"github.com/stevejefferson/trac2gitea/accessor/mock_trac"
 	"github.com/stevejefferson/trac2gitea/markdown"
