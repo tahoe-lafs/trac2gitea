@@ -197,6 +197,6 @@ docker compose build
 docker compose run --rm go-shell
 go version
 ...
-make
+make mockdeps && make
 ...
 ```
