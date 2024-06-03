@@ -63,7 +63,7 @@ accessor/mock_trac/accessor.go: accessor/trac/accessor.go
 	$(MOCKGEN) -destination=$@ $(ROOTPACKAGE)/$(<D) Accessor
 
 mockdeps:
-	$(GOINSTALL) github.com/golang/mock/mockgen@v1.4.3
+	$(GOINSTALL) go.uber.org/mock/mockgen@v0.4.0
 
 mockclean:
 	rm -rf mock_markdown accessor/mock_gitea accessor/mock_giteawiki accessor/mock_trac
