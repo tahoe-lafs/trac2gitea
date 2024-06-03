@@ -1,0 +1,56 @@
+name: Go
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  main:
+    name: Main
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Docker
+        id: verify_docker
+        run: |
+          docker run --rm hello-world:latest > /dev/null
+          docker rmi hello-world:latest > /dev/null
+          docker version
+          docker compose version
+
+      - name: Cache docker images
+        uses: ScribeMD/docker-cache@0.3.3
+        with:
+          key: |
+            docker-${{ runner.os }}-${{ hashFiles(
+              'docker-compose*.yml',
+              'docker/**'
+            ) }}
+
+      - name: Fix goup membership
+        id: fix_group
+        run: |
+          # Add the existing `runner` group to avoid the `docker` one
+          sudo adduser runner runner
+          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
+
+      - name: Build images
+        id: build_images
+        run: |
+          docker compose build --progress=plain \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID}
+
+      - name: Go make
+        id: go_make
+        run: |
+          docker compose run go-shell sh -c "make"

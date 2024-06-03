@@ -1,0 +1,29 @@
+# Docker compose file to provide a reproducable Go environment
+version: '3'
+services:
+  go-shell:
+    build:
+      context: docker/go
+      dockerfile: Dockerfile
+      args:
+        user: appuser
+        group: appgroup
+        uid: "${_UID:-1000}"
+        gid: "${_GID:-1000}"
+    environment:
+      - GOCACHE=/var/lib/appdata/.gocache
+    volumes:
+      - .:/var/lib/appdata
+    working_dir: /var/lib/appdata
+    stdin_open: true
+    tty: true
+    hostname: go-shell.local
+    container_name: go-shell.local
+    network_mode: "bridge"
+    # Prevents container to hang the host
+    # Requires `... --compatibility run ...`
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 512M
