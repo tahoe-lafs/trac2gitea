@@ -279,7 +279,7 @@ func expectIssueCreation(t *testing.T, ticket *TicketImport) {
 		DoAndReturn(func(issue *gitea.Issue) (int64, error) {
 			assertEquals(t, issue.Index, ticket.ticketID)
 			assertEquals(t, issue.Summary, ticket.summary)
-			assertEquals(t, issue.Description, ticket.descriptionMarkdown)
+			assertEquals(t, issue.Description, "")
 			assertEquals(t, issue.OriginalAuthorID, gitea.NullID)
 			assertEquals(t, issue.OriginalAuthorName, originalAuthorName)
 			assertEquals(t, issue.ReporterID, ticket.reporter.giteaUserID)
@@ -340,6 +340,13 @@ func expectRepoIssueIndexUpdates(t *testing.T, issueID, ticketID int64) {
 		Return(nil)
 }
 
+func expectIssueDescriptionUpdates(t *testing.T, issueID int64, issueDescription string) {
+	mockGiteaAccessor.
+		EXPECT().
+		UpdateIssueDescription(issueID, issueDescription).
+		Return(nil)
+}
+
 func expectIssueClosedTimeUpdate(t *testing.T, issueID int64) {
 	mockGiteaAccessor.
 		EXPECT().
@@ -352,11 +359,14 @@ func expectAllTicketActions(t *testing.T, ticket *TicketImport) {
 	expectUserLookup(t, ticket.owner)
 	expectUserLookup(t, ticket.reporter)
 
+	// expect to create Gitea issue
+	expectIssueCreation(t, ticket)
+
 	// expect to convert ticket description to markdown
 	expectDescriptionMarkdownConversion(t, ticket)
 
-	// expect to create Gitea issue
-	expectIssueCreation(t, ticket)
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, ticket.issueID, ticket.descriptionMarkdown)
 
 	// expect creation of all labels from Trac ticket appearing in the Gitea issue
 	expectIssueLabelCreation(t, ticket, ticket.componentLabel)

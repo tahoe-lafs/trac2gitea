@@ -30,11 +30,10 @@ func (importer *Importer) importTicket(ticket *trac.Ticket, closed bool, userMap
 		}
 	}
 
-	convertedDescription := importer.markdownConverter.TicketConvert(ticket.TicketID, ticket.Description)
-	convertedDescription = MapRevisions(convertedDescription, revisionMap)
+	// Create the issue with empty description first
 	issue := gitea.Issue{Index: ticket.TicketID, Summary: ticket.Summary, ReporterID: reporterID,
 		Milestone: ticket.MilestoneName, OriginalAuthorID: 0, OriginalAuthorName: originalAuthorName,
-		Closed: closed, Description: convertedDescription, Created: ticket.Created, Updated: ticket.Updated}
+		Closed: closed, Description: "", Created: ticket.Created, Updated: ticket.Updated}
 	issueID, err := importer.giteaAccessor.AddIssue(&issue)
 	if err != nil {
 		return gitea.NullID, err
@@ -114,6 +113,12 @@ func (importer *Importer) ImportTickets(
 			userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap,
 			revisionMap)
 		if err != nil {
+			return err
+		}
+
+		// Update the issue description after creation - so link to itself can be resolved (e.g.: comment)
+		convertedDescription := importer.markdownConverter.TicketConvert(ticket.TicketID, ticket.Description)
+		if err = importer.giteaAccessor.UpdateIssueDescription(issueID, MapRevisions(convertedDescription, revisionMap)); err != nil {
 			return err
 		}
 
