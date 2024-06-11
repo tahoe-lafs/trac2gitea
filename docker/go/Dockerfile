@@ -1,5 +1,5 @@
 # Start from the official Go image based on Alpine
-FROM golang:1.19.3-alpine
+FROM golang:1.22.4-alpine
 
 LABEL Description="Trac2Gitea migration tool"
 
