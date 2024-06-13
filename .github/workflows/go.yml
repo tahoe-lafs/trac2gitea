@@ -60,7 +60,7 @@ jobs:
         run: |
           # some basic tests on the binary built earlier
           echo -n "Test for a static executable:       "
-          ldd ./trac2gitea | grep -q 'not a dynamic executable' \
+          ldd ./trac2gitea 2>&1 | grep -q 'not a dynamic executable' \
           && echo PASS \
           || { echo FAIL; exit 1; }
           echo -n "Test for usage prompt on execution: "
