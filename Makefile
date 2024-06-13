@@ -5,7 +5,7 @@ GOBINDIR=$(GOPATH)/bin
 # commands
 GOCMD=go
 GOINSTALL=$(GOCMD) install
-GOBUILD=$(GOCMD) build
+GOBUILD=$(GOCMD) build -ldflags '-linkmode external -w -extldflags "-static"'
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
