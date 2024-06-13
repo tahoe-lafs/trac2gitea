@@ -54,3 +54,9 @@ jobs:
         id: go_make
         run: |
           docker compose run go-shell sh -c "make mockdeps && make"
+
+      - name: Test binary
+        id: test_binary
+        run: |
+          ldd ../MoveOffTrac/trac2gitea/trac2gitea | grep 'not found' && { echo FAIL; exit 1; } || echo PASS
+          ./trac2gitea --help 2>&1 | grep '^Usage' && echo PASS || { echo FAIL; exit 1; }
