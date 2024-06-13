@@ -59,11 +59,11 @@ jobs:
         id: test_binary
         run: |
           # some basic tests on the binary built earlier
-          echo -n "Test for a static executable:       "
+          echo -n "Test for a static executable...       "
           ldd ./trac2gitea 2>&1 | grep -q 'not a dynamic executable' \
           && echo PASS \
           || { echo FAIL; exit 1; }
-          echo -n "Test for usage prompt on execution: "
+          echo -n "Test for usage prompt on execution... "
           ./trac2gitea --help 2>&1 | grep -q '^Usage' \
           && echo 'PASS' \
           || { echo 'FAIL'; exit 1; }
