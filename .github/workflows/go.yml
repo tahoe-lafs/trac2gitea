@@ -58,6 +58,7 @@ jobs:
       - name: Test binary
         id: test_binary
         run: |
+          # Run some basic test on the binary built earlier
           echo -n "Test for a static executable:       "
           ldd ../trac2gitea | grep -q 'not a dynamic executable' \
           && echo PASS \
