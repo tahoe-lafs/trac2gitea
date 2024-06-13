@@ -54,3 +54,16 @@ jobs:
         id: go_make
         run: |
           docker compose run go-shell sh -c "make mockdeps && make"
+
+      - name: Test binary
+        id: test_binary
+        run: |
+          # Run some basic test on the binary built earlier
+          echo -n "Test for a static executable:       "
+          ldd ../trac2gitea | grep -q 'not a dynamic executable' \
+          && echo PASS \
+          || { echo FAIL; exit 1; }
+          echo -n "Test for usage prompt on execution: "
+          ./trac2gitea --help 2>&1 | grep -q '^Usage' \
+          && echo 'PASS' \
+          || { echo 'FAIL'; exit 1; }
