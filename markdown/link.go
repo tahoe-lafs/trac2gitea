@@ -256,25 +256,31 @@ func (converter *DefaultConverter) resolveTicketLink(link string) string {
 	return markLink(issueURL)
 }
 
-func (converter *DefaultConverter) resolveWikiLink(link string) string {
+func (converter *DefaultConverter) resolveWikiLink(path string, link string) string {
 	wikiPageName := wikiLinkRegexp.ReplaceAllString(link, `$1`)
 	wikiPageAnchor := wikiLinkRegexp.ReplaceAllString(link, `$2`)
 	translatedPageName := converter.giteaAccessor.TranslateWikiPageName(wikiPageName)
+	var suffix string
 	if wikiPageAnchor == "" {
-		return markLink(translatedPageName)
+		suffix = ""
+	} else {
+		suffix = "#" + wikiPageAnchor
 	}
-	return markLink(translatedPageName + "#" + wikiPageAnchor)
+	return markLink(path + translatedPageName + suffix)
 }
 
-func (converter *DefaultConverter) resolveWikiCamelCaseLink(link string) string {
+func (converter *DefaultConverter) resolveWikiCamelCaseLink(path string, link string) string {
 	leadingChar := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$1`)
 	wikiPageName := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$2`)
 	wikiPageAnchor := wikiCamelCaseLinkRegexp.ReplaceAllString(link, `$3`)
 	translatedPageName := converter.giteaAccessor.TranslateWikiPageName(wikiPageName)
+	var suffix string
 	if wikiPageAnchor == "" {
-		return leadingChar + markLink(translatedPageName)
+		suffix = ""
+	} else {
+		suffix = "#" + wikiPageAnchor
 	}
-	return leadingChar + markLink(translatedPageName+"#"+wikiPageAnchor)
+	return leadingChar + markLink(path + translatedPageName + suffix)
 }
 
 // convertBrackettedTracLinks converts the various forms of (square) bracketted Trac links into an unbracketted form.
@@ -374,12 +380,17 @@ func (converter *DefaultConverter) convertUnbrackettedTracLinks(ticketID int64, 
 		return converter.resolveTicketLink(match)
 	})
 
+	// add a 'wiki/' path for link from ticket
+	var path = ""
+	if ticketID != trac.NullID {
+		path = "wiki/"
+	}
 	out = wikiLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		return converter.resolveWikiLink(match)
+		return converter.resolveWikiLink(path, match)
 	})
 
 	out = wikiCamelCaseLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
-		return converter.resolveWikiCamelCaseLink(match)
+		return converter.resolveWikiCamelCaseLink(path, match)
 	})
 
 	return out
