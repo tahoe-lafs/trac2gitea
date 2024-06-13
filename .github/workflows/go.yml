@@ -59,7 +59,7 @@ jobs:
         id: test_binary
         run: |
           echo -n "Test for a static executable:       "
-          ldd ../MoveOffTrac/trac2gitea/trac2gitea | grep -q 'not a dynamic executable' \
+          ldd ../trac2gitea | grep -q 'not a dynamic executable' \
           && echo PASS \
           || { echo FAIL; exit 1; }
           echo -n "Test for usage prompt on execution: "
