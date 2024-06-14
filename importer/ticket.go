@@ -116,12 +116,6 @@ func (importer *Importer) ImportTickets(
 			return err
 		}
 
-		// Update the issue description after creation - so link to itself can be resolved (e.g.: comment)
-		convertedDescription := importer.markdownConverter.TicketConvert(ticket.TicketID, ticket.Description)
-		if err = importer.giteaAccessor.UpdateIssueDescription(issueID, MapRevisions(convertedDescription, revisionMap)); err != nil {
-			return err
-		}
-
 		// If closed, set closed date here to lastUpdate!
 		if closed {
 			if err = importer.giteaAccessor.SetIssueClosedTime(issueID, lastUpdate); err != nil {
@@ -138,6 +132,12 @@ func (importer *Importer) ImportTickets(
 		}
 
 		if err = importer.giteaAccessor.UpdateIssueIndex(issueID, ticket.TicketID); err != nil {
+			return err
+		}
+
+		// Update the issue description after creation - so link to itself can be resolved (e.g.: comment)
+		convertedDescription := importer.markdownConverter.TicketConvert(ticket.TicketID, ticket.Description)
+		if err = importer.giteaAccessor.UpdateIssueDescription(issueID, MapRevisions(convertedDescription, revisionMap)); err != nil {
 			return err
 		}
 		return nil

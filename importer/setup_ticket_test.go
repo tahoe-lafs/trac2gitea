@@ -362,12 +362,6 @@ func expectAllTicketActions(t *testing.T, ticket *TicketImport) {
 	// expect to create Gitea issue
 	expectIssueCreation(t, ticket)
 
-	// expect to convert ticket description to markdown
-	expectDescriptionMarkdownConversion(t, ticket)
-
-	// expect to update Gitea issue description
-	expectIssueDescriptionUpdates(t, ticket.issueID, ticket.descriptionMarkdown)
-
 	// expect creation of all labels from Trac ticket appearing in the Gitea issue
 	expectIssueLabelCreation(t, ticket, ticket.componentLabel)
 	expectIssueLabelCreation(t, ticket, ticket.priorityLabel)

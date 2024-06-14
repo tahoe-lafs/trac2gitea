@@ -34,6 +34,12 @@ func TestImportTicketComponentAddition(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -64,6 +70,12 @@ func TestImportTicketComponentAmend(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -96,6 +108,12 @@ func TestImportTicketComponentRemoval(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -126,6 +144,12 @@ func TestImportTicketPriorityAddition(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -158,6 +182,12 @@ func TestImportTicketPriorityAmend(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -188,6 +218,12 @@ func TestImportTicketPriorityRemoval(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -220,6 +256,12 @@ func TestImportTicketResolutionAddition(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -250,6 +292,12 @@ func TestImportTicketResolutionAmend(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -282,6 +330,12 @@ func TestImportTicketResolutionRemoval(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -312,6 +366,12 @@ func TestImportTicketSeverityAddition(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -344,6 +404,12 @@ func TestImportTicketSeverityAmend(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -374,6 +440,12 @@ func TestImportTicketSeverityRemoval(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -406,6 +478,12 @@ func TestImportTicketTypeAddition(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -436,6 +514,12 @@ func TestImportTicketTypeAmend(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -468,6 +552,12 @@ func TestImportTicketTypeRemoval(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -498,6 +588,12 @@ func TestImportTicketVersionAddition(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
@@ -530,6 +626,12 @@ func TestImportTicketVersionAmend(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -560,6 +662,12 @@ func TestImportTicketVersionRemoval(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
