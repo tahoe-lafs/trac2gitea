@@ -64,10 +64,9 @@ func (accessor *DefaultAccessor) GetUserEMailAddress(userName string) (string, e
 	return emailAddress, nil
 }
 
-// getUserRepoURL retrieves the URL of the current repository for the current user
+// getUserRepoURL retrieves the relative URL of the current repository for the current user
 func (accessor *DefaultAccessor) getUserRepoURL() string {
-	rootURL := accessor.GetStringConfig("server", "ROOT_URL")
-	return fmt.Sprintf("%s/%s/%s", rootURL, accessor.userName, accessor.repoName)
+	return fmt.Sprintf("/%s/%s", accessor.userName, accessor.repoName)
 }
 
 // MatchUser retrieves the name of the user best matching a user name or email address
