@@ -157,3 +157,18 @@ func (accessor *DefaultAccessor) UpdateIssueIndex(issueID, ticketID int64) error
 
 	return err
 }
+
+// UpdateIssueDescription updates the description of an existing issue in Gitea
+func (accessor *DefaultAccessor) UpdateIssueDescription(issueID int64, issueDescription string) error {
+	if err := accessor.db.Model(&Issue{}).
+		Where("id=?", issueID).
+		Update("content", issueDescription).
+		Error; err != nil {
+
+		return errors.Wrapf(err, "updating description for issue %d", issueID)
+	}
+
+	log.Info("updated description of issue %d", issueID)
+
+	return nil
+}

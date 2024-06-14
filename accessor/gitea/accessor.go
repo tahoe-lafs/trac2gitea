@@ -233,6 +233,9 @@ type Accessor interface {
 	// UpdateIssueIndex updates the issue_index table after adding a new issue
 	UpdateIssueIndex(issueID, ticketID int64) error
 
+	// UpdateIssueDescription updates the description of an existing issue in Gitea
+	UpdateIssueDescription(issueID int64, issueDescription string) error
+
 	/*
 	 * Issue Assignees
 	 */
