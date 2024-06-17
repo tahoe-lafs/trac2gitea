@@ -280,6 +280,10 @@ func (converter *DefaultConverter) resolveWikiCamelCaseLink(path string, link st
 	} else {
 		suffix = "#" + wikiPageAnchor
 	}
+	// add accompagnying comment if there is not one already
+	if leadingChar != "]" {
+		return leadingChar + "[" + translatedPageName + suffix + "]" + markLink(path + translatedPageName + suffix)
+	}
 	return leadingChar + markLink(path + translatedPageName + suffix)
 }
 
