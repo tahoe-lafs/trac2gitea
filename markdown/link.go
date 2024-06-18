@@ -36,14 +36,14 @@ var (
 	localFileLinkRegexp = regexp.MustCompile(`^[[:alnum:]-._,]+\.[[:alpha:]]+$`)
 
 	// regexp for a trac 'comment:<commentNum>' and 'comment:<commentNum>:ticket:<ticketID>' link: $1=commentNum, $2=ticketID
-	ticketCommentLinkRegexp = regexp.MustCompile(`comment:([[:digit:]]+)(?::ticket:([[:digit:]]+))?`)
+	ticketCommentLinkRegexp = regexp.MustCompile(`(.{0,1})comment:([[:digit:]]+)(?::ticket:([[:digit:]]+))?`)
 
 	// regexp for a trac 'milestone:<milestoneName>' link: $1=milestoneName
-	milestoneLinkRegexp = regexp.MustCompile(`milestone:([[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+)`)
+	milestoneLinkRegexp = regexp.MustCompile(`(.{0,1})milestone:([[:alnum:]\-._~:/?#@!$&'"()*+,;%=]+)`)
 
 	// regexp for a trac 'attachment:<file>', 'attachment:<file>:wiki:<pageName>' and 'attachment:<file>:ticket:<ticketID>' links: $1=file, $2=pageName, $3=ticketID
 	attachmentLinkRegexp = regexp.MustCompile(
-		`attachment:([[:alnum:]\-._~/?#@!$&'"()*+,;%=]+)` +
+		`(.{0,1})attachment:([[:alnum:]\-._~/?#@!$&'"()*+,;%=]+)` +
 			`(?:` +
 			`(?::wiki:((?:[[:upper:]][[:lower:]]*)+))|` +
 			`(?::ticket:([[:digit:]]+))` +
@@ -100,7 +100,8 @@ func (converter *DefaultConverter) resolveHtdocsLink(link string) string {
 }
 
 func (converter *DefaultConverter) resolveTicketCommentLink(ticketID int64, link string) string {
-	commentNumStr := ticketCommentLinkRegexp.ReplaceAllString(link, `$1`)
+	leadingChar := ticketCommentLinkRegexp.ReplaceAllString(link, `$1`)
+	commentNumStr := ticketCommentLinkRegexp.ReplaceAllString(link, `$2`)
 	var commentNum int64
 	commentNum, err := strconv.ParseInt(commentNumStr, 10, 64)
 	if err != nil {
@@ -108,7 +109,7 @@ func (converter *DefaultConverter) resolveTicketCommentLink(ticketID int64, link
 		return link
 	}
 
-	commentTicketIDStr := ticketCommentLinkRegexp.ReplaceAllString(link, `$2`)
+	commentTicketIDStr := ticketCommentLinkRegexp.ReplaceAllString(link, `$3`)
 	var commentTicketID int64
 	if commentTicketIDStr != "" {
 		commentTicketID, err = strconv.ParseInt(commentTicketIDStr, 10, 64)
@@ -145,11 +146,17 @@ func (converter *DefaultConverter) resolveTicketCommentLink(ticketID int64, link
 	}
 
 	commentURL := converter.giteaAccessor.GetIssueCommentURL(commentTicketID, commentID)
-	return markLink(commentURL)
+
+	// unless already defined before, use a short link text instead of the full URL
+	if leadingChar != "]" {
+		return leadingChar + "[comment:" + strconv.FormatInt(commentID, 10) + "]" + markLink(commentURL)
+	}
+	return leadingChar + markLink(commentURL)
 }
 
 func (converter *DefaultConverter) resolveMilestoneLink(link string) string {
-	milestoneName := milestoneLinkRegexp.ReplaceAllString(link, `$1`)
+	leadingChar := milestoneLinkRegexp.ReplaceAllString(link, `$1`)
+	milestoneName := milestoneLinkRegexp.ReplaceAllString(link, `$2`)
 	milestoneID, err := converter.giteaAccessor.GetMilestoneID(milestoneName)
 	if err != nil {
 		return link // not a recognised link - do not mark (error should already be logged)
@@ -160,10 +167,16 @@ func (converter *DefaultConverter) resolveMilestoneLink(link string) string {
 	}
 
 	milestoneURL := converter.giteaAccessor.GetMilestoneURL(milestoneID)
-	return markLink(milestoneURL)
+
+	// unless already defined before, use a short link text instead of the full URL
+	if leadingChar != "]" {
+		return leadingChar + "[milestone:" + milestoneName + "]" + markLink(milestoneURL)
+	}
+	return leadingChar + markLink(milestoneURL)
 }
 
 func (converter *DefaultConverter) resolveTicketAttachmentLink(ticketID int64, attachmentName string, link string) string {
+	leadingChar := attachmentLinkRegexp.ReplaceAllString(link, `$1`)
 	issueID, err := converter.giteaAccessor.GetIssueID(ticketID)
 	if err != nil {
 		return link // not a recognised link - do not mark
@@ -183,19 +196,30 @@ func (converter *DefaultConverter) resolveTicketAttachmentLink(ticketID int64, a
 	}
 
 	attachmentURL := converter.giteaAccessor.GetIssueAttachmentURL(issueID, uuid)
-	return markLink(attachmentURL)
+
+	// Keep original text unless already defined before
+	if leadingChar != "]" {
+		return leadingChar + "[attachment:" + attachmentName + "]" + markLink(attachmentURL)
+	}
+	return leadingChar + markLink(attachmentURL)
 }
 
 func (converter *DefaultConverter) resolveWikiAttachmentLink(wikiPage string, attachmentName string, link string) string {
+	leadingChar := attachmentLinkRegexp.ReplaceAllString(link, `$1`)
 	attachmentWikiRelPath := converter.giteaAccessor.GetWikiAttachmentRelPath(wikiPage, attachmentName)
 	attachmentURL := converter.giteaAccessor.GetWikiFileURL(attachmentWikiRelPath)
-	return markLink(attachmentURL)
+
+	// Keep original text unless already defined before
+	if leadingChar != "]" {
+		return leadingChar + "[attachment:" + attachmentName + "]" + markLink(attachmentURL)
+	}
+	return leadingChar + markLink(attachmentURL)
 }
 
 func (converter *DefaultConverter) resolveAttachmentLink(ticketID int64, wikiPage string, link string) string {
-	attachmentName := attachmentLinkRegexp.ReplaceAllString(link, `$1`)
-	attachmentWikiPage := attachmentLinkRegexp.ReplaceAllString(link, `$2`)
-	attachmentTicketIDStr := attachmentLinkRegexp.ReplaceAllString(link, `$3`)
+	attachmentName := attachmentLinkRegexp.ReplaceAllString(link, `$2`)
+	attachmentWikiPage := attachmentLinkRegexp.ReplaceAllString(link, `$3`)
+	attachmentTicketIDStr := attachmentLinkRegexp.ReplaceAllString(link, `$4`)
 
 	// there are two types of attachment: ticket attachments and wiki attachments...
 	if attachmentTicketIDStr != "" {

@@ -98,21 +98,27 @@ func verifyAllLinkTypes(
 	convertFn func(tracText string) string,
 	tracLinkStr string,
 	markdownLinkStr string,
-	testAutomaticLinks ...bool) {
+	extraOptions ...string) {
 
-	// use testAutomaticLinks when the tested link should work without accompanying text
-	if len(testAutomaticLinks) > 0 {
+	// the markdown link text can be specified with the first extra option
+	markdownLinkText := markdownLinkStr
+	if len(extraOptions) > 0 && extraOptions[0] != "" {
+		markdownLinkText = extraOptions[0]
+	}
+
+	// if a second extra option is passed, the tested link should work without accompanying text
+	if len(extraOptions) > 1 && extraOptions[1] == "true" {
 		verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
 		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
 		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
 		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), true)
 		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownAutomaticLink(markdownLinkStr), false)
 	} else {
-		verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
-		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), true)
-		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
-		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), true)
-		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkStr), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracPlainLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkText), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkText), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkText), false)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkText), true)
+		verifyLink(t, setUpFn, tearDownFn, convertFn, tracDoubleBracketLink(tracLinkStr), markdownLinkWithText(markdownLinkStr, markdownLinkText), false)
 	}
 
 	verifyLink(t, setUpFn, tearDownFn, convertFn, tracSingleBracketLinkWithText(tracLinkStr, linkText), markdownLinkWithText(markdownLinkStr, linkText), true)
@@ -130,13 +136,29 @@ func verifyAllLinkTypes(
 const httpLink = "http://www.example.com"
 
 func TestHttpLinks(t *testing.T) {
-	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpLink, httpLink, true)
+	verifyAllLinkTypes(
+		t,
+		setUp,
+		tearDown,
+		wikiConvert,
+		httpLink,
+		httpLink,
+		"",
+		"true")
 }
 
 const httpsLink = "https://www.example.com"
 
 func TestHttpsLink(t *testing.T) {
-	verifyAllLinkTypes(t, setUp, tearDown, wikiConvert, httpsLink, httpsLink, true)
+	verifyAllLinkTypes(
+		t,
+		setUp,
+		tearDown,
+		wikiConvert,
+		httpsLink,
+		httpsLink,
+		"",
+		"true")
 }
 
 const (
@@ -282,6 +304,7 @@ const (
 	tracCommentNumStr        = "12"
 	commentTime       int64  = 112233
 	commentID         int64  = 54321
+	commentIDStr      string = "54321"
 	commentURL        string = "url-of-comment-54321"
 )
 
@@ -318,7 +341,8 @@ func TestImplicitTicketCommentLink(t *testing.T) {
 		tearDown,
 		ticketConvert,
 		"comment:"+tracCommentNumStr,
-		commentURL)
+		commentURL,
+		"comment:"+commentIDStr)
 }
 
 const (
@@ -337,7 +361,8 @@ func TestExplicitTicketCommentLink(t *testing.T) {
 		tearDown,
 		ticketConvert,
 		"comment:"+tracCommentNumStr+":ticket:"+otherTicketIDStr,
-		commentURL)
+		commentURL,
+		"comment:"+commentIDStr)
 }
 
 const (
@@ -369,7 +394,8 @@ func TestMilestoneLink(t *testing.T) {
 		tearDown,
 		wikiConvert,
 		"milestone:"+milestoneName,
-		milestoneURL)
+		milestoneURL,
+		"milestone:"+milestoneName)
 }
 
 const (
@@ -405,7 +431,8 @@ func TestImplicitWikiAttachmentLink(t *testing.T) {
 		tearDown,
 		wikiConvert,
 		"attachment:"+attachmentName,
-		attachmentWikiURL)
+		attachmentWikiURL,
+		"attachment:"+attachmentName)
 }
 
 const (
@@ -423,7 +450,8 @@ func TestExplicitWikiAttachmentLink(t *testing.T) {
 		tearDown,
 		wikiConvert,
 		"attachment:"+attachmentName+":wiki:"+otherWikiPage,
-		attachmentWikiURL)
+		attachmentWikiURL,
+		"attachment:"+attachmentName)
 }
 
 const (
@@ -458,7 +486,8 @@ func TestImplicitTicketAttachmentLink(t *testing.T) {
 		tearDown,
 		ticketConvert,
 		"attachment:"+attachmentName,
-		ticketAttachmentURL)
+		ticketAttachmentURL,
+		"attachment:"+attachmentName)
 }
 
 func setUpExplicitTicketAttachmentLink(t *testing.T) {
@@ -472,7 +501,8 @@ func TestExplicitTicketAttachmentLink(t *testing.T) {
 		tearDown,
 		ticketConvert,
 		"attachment:"+attachmentName+":ticket:"+otherTicketIDStr,
-		ticketAttachmentURL)
+		ticketAttachmentURL,
+		"attachment:"+attachmentName)
 }
 
 const (
