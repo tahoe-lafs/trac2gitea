@@ -34,6 +34,12 @@ func TestImportTicketClose(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -64,6 +70,12 @@ func TestImportTicketReopen(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }

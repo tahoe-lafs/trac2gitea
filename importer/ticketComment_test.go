@@ -35,6 +35,12 @@ func TestImportTicketWithComments(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, closedTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -74,6 +80,14 @@ func TestImportMultipleTicketsWithComments(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, closedTicket)
+	expectDescriptionMarkdownConversion(t, openTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
+	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -105,6 +119,12 @@ func TestImportTicketWithCommentButNoTracUser(t *testing.T) {
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
 
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, noTracUserTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, noTracUserTicket.issueID, noTracUserTicket.descriptionMarkdown)
+
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
 
@@ -135,6 +155,12 @@ func TestImportTicketWithCommentButUnmappedTracUser(t *testing.T) {
 
 	// expect all issue counts to be updated
 	expectIssueCountUpdates(t)
+
+	// expect to convert ticket description to markdown
+	expectDescriptionMarkdownConversion(t, unmappedTracUserTicket)
+
+	// expect to update Gitea issue description
+	expectIssueDescriptionUpdates(t, unmappedTracUserTicket.issueID, unmappedTracUserTicket.descriptionMarkdown)
 
 	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
 }
