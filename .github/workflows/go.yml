@@ -92,3 +92,8 @@ jobs:
         id: check
         run: |
           nix flake check
+
+      - name: Build
+        id: build
+        run: |
+          nix-build
