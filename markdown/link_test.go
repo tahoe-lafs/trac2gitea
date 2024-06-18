@@ -554,3 +554,30 @@ func TestSourceLink(t *testing.T) {
 		"source:\"repo-name/"+sourcePath+"\"",
 		sourceURL)
 }
+
+func setUpImageLink(t *testing.T) {
+	setUpAnyTicketLink(t, ticketID)
+
+	// expect call to get relative path of attachment within wiki repo
+	mockGiteaAccessor.
+		EXPECT().
+		GetIssueAttachmentUUID(gomock.Eq(issueID), gomock.Eq(attachmentName)).
+		Return(ticketAttachmentUUID, nil)
+
+	// expect call to lookup URL for attachment file
+	// mockGiteaAccessor.
+	// 	EXPECT().
+	// 	GetIssueAttachmentURL(gomock.Eq(issueID), gomock.Eq(ticketAttachmentUUID)).
+	// 	Return(ticketAttachmentURL)
+}
+
+func TestImageLink(t *testing.T) {
+	verifyAllLinkTypes(
+		t,
+		setUpImageLink,
+		tearDown,
+		ticketConvert,
+		"[[Image("+attachmentName+")]]",
+		"/attachments/" + ticketAttachmentUUID,
+		"")
+}

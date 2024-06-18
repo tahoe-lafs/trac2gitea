@@ -314,7 +314,7 @@ func (converter *DefaultConverter) resolveWikiCamelCaseLink(path string, link st
 // convertBrackettedTracLinks converts the various forms of (square) bracketted Trac links into an unbracketted form.
 // The conversion performed here is partial: this method is solely responsible for disposing of the Trac bracketting
 // - any resolution of actual trac links is done later
-func (converter *DefaultConverter) convertBrackettedTracLinks(wikiPage string, in string) string {
+func (converter *DefaultConverter) convertBrackettedTracLinks(ticketID int64, wikiPage string, in string) string {
 	out := in
 
 	out = doubleBracketImageLinkRegexp.ReplaceAllStringFunc(out, func(match string) string {
@@ -325,7 +325,21 @@ func (converter *DefaultConverter) convertBrackettedTracLinks(wikiPage string, i
 
 		// If the image is just a local filename, we have to get its path, and mark that as a processed link
 		if localFileLinkRegexp.MatchString(image) {
-			image = markLink(converter.giteaAccessor.GetWikiAttachmentRelPath(wikiPage, image))
+			// first, we need to validate ticket id
+			if ticketID != trac.NullID {
+				issueID, err := converter.giteaAccessor.GetIssueID(ticketID)
+				if err != nil {
+					return link // not a recognised link - do not mark (error already logged)
+				}
+				if issueID == gitea.NullID {
+					log.Warn("cannot find Gitea issue for ticket %d referenced by Trac link \"%s\"", ticketID, link)
+					return link // not a recognised link - do not mark
+				}
+				uuid, err := converter.giteaAccessor.GetIssueAttachmentUUID(issueID, image)
+				image = markLink("/attachments/" + uuid)
+			} else {
+				image = markLink(converter.giteaAccessor.GetWikiAttachmentRelPath(wikiPage, image))
+			}
 		}
 
 		if link == "" {
@@ -466,7 +480,7 @@ func (converter *DefaultConverter) convertLinks(ticketID int64, wikiPage string,
 
 	// conversion occurs in three distinct phases with each phase dealing with one part of the link syntax
 	// and leaving the remainder for the next stage
-	out = converter.convertBrackettedTracLinks(wikiPage, out)
+	out = converter.convertBrackettedTracLinks(ticketID, wikiPage, out)
 	out = converter.convertUnbrackettedTracLinks(ticketID, wikiPage, out)
 	out = converter.unmarkLinks(out)
 	return out
