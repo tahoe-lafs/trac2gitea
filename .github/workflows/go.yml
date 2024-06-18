@@ -66,6 +66,7 @@ jobs:
           ./trac2gitea --help 2>&1 | grep -q '^Usage' \
           && echo 'PASS' \
           || { echo 'FAIL'; exit 1; }
+
   nix:
     name: Nix
     runs-on: ubuntu-22.04
@@ -74,9 +75,9 @@ jobs:
       contents: read
     strategy:
       matrix:
-        nix_path:
-          - nixpkgs=channel:nixos-stable
-          - nixpkgs=channel:nixos-unstable
+        nix_channel:
+          - nixos-stable
+          - nixos-unstable
     steps:
       - name: Checkout
         id: checkout
@@ -86,7 +87,7 @@ jobs:
         id: install_nix
         uses: cachix/install-nix-action@v27
         with:
-          nix_path: ${{ matrix.nix_path }}
+          nix_path: nixpkgs=channel:${{ matrix.nix_channel }}
 
       - name: Check
         id: check
