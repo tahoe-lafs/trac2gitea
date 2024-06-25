@@ -74,6 +74,20 @@ func TestMapRange(t *testing.T) {
 	}
 }
 
+func TestMapBrackettedCommit(t *testing.T) {
+	revisionMap := map[string]string{
+		"r4485": "deadf00d",
+	}
+	input := `In [4485]:`
+	expected := `In deadf00d:`
+
+	result := importer.MapRevisions(input, revisionMap)
+
+	if result != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, result)
+	}
+}
+
 func TestMapCommitReference(t *testing.T) {
 	revisionMap := map[string]string{
 		"r4485": "deadf00d",
