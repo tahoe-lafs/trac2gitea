@@ -244,6 +244,7 @@ func (accessor *DefaultAccessor) getDbDialect() (gorm.Dialector, string, error) 
 	dbPassword := accessor.GetStringConfig("database", "PASSWD")
 	dbHost := accessor.GetStringConfig("database", "HOST")
 	dbSslMode := accessor.GetStringConfig("database", "SSL_MODE")
+	dbCharset := accessor.GetStringConfig("database", "CHARSET")
 
 	switch dbType {
 	case "sqlite3":
