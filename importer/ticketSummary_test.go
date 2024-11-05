@@ -40,5 +40,5 @@ func TestImportTicketSummary(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, nil)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, nil)
 }

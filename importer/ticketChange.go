@@ -90,7 +90,7 @@ func (importer *Importer) importTicketChanges(
 	ticketID int64,
 	issueID int64,
 	lastUpdate int64,
-	userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap map[string]string) (int64, error) {
+	userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap map[string]string) (int64, error) {
 	commentLastUpdate := lastUpdate
 	err := importer.tracAccessor.GetTicketChanges(ticketID, func(change *trac.TicketChange) error {
 		commentID, err := importer.importTicketChange(issueID, change, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)

@@ -64,7 +64,7 @@ func (importer *Importer) importTicket(ticket *trac.Ticket, closed bool, userMap
 
 // ImportTickets imports Trac tickets as Gitea issues.
 func (importer *Importer) ImportTickets(
-	userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap map[string]string) error {
+	userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap map[string]string) error {
 	err := importer.tracAccessor.GetTickets(func(ticket *trac.Ticket) error {
 		closed := (ticket.Status == string(trac.TicketStatusClosed))
 		issueID, err := importer.importTicket(ticket, closed, userMap, revisionMap)
@@ -100,6 +100,11 @@ func (importer *Importer) ImportTickets(
 			return err
 		}
 
+		_, err = importer.importTicketLabel(issueID, ticket.KeywordName, keywordMap)
+		if err != nil {
+			return err
+		}
+
 		_, err = importer.importTicketLabel(issueID, ticket.VersionName, versionMap)
 		if err != nil {
 			return err
@@ -110,7 +115,7 @@ func (importer *Importer) ImportTickets(
 			return err
 		}
 		lastUpdate, err = importer.importTicketChanges(ticket.TicketID, issueID, lastUpdate,
-			userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap,
+			userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap,
 			revisionMap)
 		if err != nil {
 			return err

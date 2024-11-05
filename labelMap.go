@@ -20,51 +20,57 @@ const (
 	severityTypeName   = "severity"
 	typeTypeName       = "type"
 	versionTypeName    = "version"
+	keywordTypeName    = "keyword"
 )
 
-func readDefaultLabelMaps(dataImporter *importer.Importer) (componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap map[string]string, err error) {
+func readDefaultLabelMaps(dataImporter *importer.Importer) (componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap map[string]string, err error) {
 	componentMap, err = dataImporter.DefaultComponentLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	priorityMap, err = dataImporter.DefaultPriorityLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	resolutionMap, err = dataImporter.DefaultResolutionLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	severityMap, err = dataImporter.DefaultSeverityLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	typeMap, err = dataImporter.DefaultTypeLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
+	}
+
+	keywordMap, err = dataImporter.DefaultKeywordLabelMap()
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	versionMap, err = dataImporter.DefaultVersionLabelMap()
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	return
 }
 
 // readLabelMaps reads the label maps from the provided file, if no file provided, import default maps using the provided importer
-func readLabelMaps(mapFile string, dataImporter *importer.Importer) (componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap map[string]string, err error) {
+func readLabelMaps(mapFile string, dataImporter *importer.Importer) (componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap map[string]string, err error) {
 	if mapFile == "" {
 		return readDefaultLabelMaps(dataImporter)
 	}
 
 	fd, err := os.Open(mapFile)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 	defer fd.Close()
 
@@ -73,6 +79,7 @@ func readLabelMaps(mapFile string, dataImporter *importer.Importer) (componentMa
 	resolutionMap = make(map[string]string)
 	severityMap = make(map[string]string)
 	typeMap = make(map[string]string)
+	keywordMap = make(map[string]string)
 	versionMap = make(map[string]string)
 
 	scanner := bufio.NewScanner(fd)
@@ -80,13 +87,13 @@ func readLabelMaps(mapFile string, dataImporter *importer.Importer) (componentMa
 		mapLine := scanner.Text()
 		equalsPos := strings.LastIndex(mapLine, "=")
 		if equalsPos == -1 {
-			return nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting '=', found %s", mapFile, mapLine)
+			return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting '=', found %s", mapFile, mapLine)
 		}
 
 		tracLabelAndType := strings.Trim(mapLine[0:equalsPos], " ")
 		colonPos := strings.LastIndex(tracLabelAndType, ":")
 		if equalsPos == -1 {
-			return nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting ':', found %s", mapFile, mapLine)
+			return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting ':', found %s", mapFile, mapLine)
 		}
 		labelType := strings.Trim(tracLabelAndType[0:colonPos], " ")
 		tracLabel := strings.Trim(tracLabelAndType[colonPos+1:], " ")
@@ -103,15 +110,17 @@ func readLabelMaps(mapFile string, dataImporter *importer.Importer) (componentMa
 			severityMap[tracLabel] = giteaLabel
 		case typeTypeName:
 			typeMap[tracLabel] = giteaLabel
+		case keywordTypeName:
+			keywordMap[tracLabel] = giteaLabel
 		case versionTypeName:
 			versionMap[tracLabel] = giteaLabel
 		default:
-			return nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting Trac label type before ':', found %s", mapFile, mapLine)
+			return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("badly formatted label map file %s: expecting Trac label type before ':', found %s", mapFile, mapLine)
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	return
@@ -127,7 +136,7 @@ func writeLabelMapToFile(fd *os.File, labelType string, labelMap map[string]stri
 	return nil
 }
 
-func writeLabelMapsToFile(mapFile string, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap map[string]string) error {
+func writeLabelMapsToFile(mapFile string, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap map[string]string) error {
 	fd, err := os.Create(mapFile)
 	if err != nil {
 		return err
@@ -139,6 +148,7 @@ func writeLabelMapsToFile(mapFile string, componentMap, priorityMap, resolutionM
 	writeLabelMapToFile(fd, resolutionTypeName, resolutionMap)
 	writeLabelMapToFile(fd, severityTypeName, severityMap)
 	writeLabelMapToFile(fd, typeTypeName, typeMap)
+	writeLabelMapToFile(fd, keywordTypeName, keywordMap)
 	writeLabelMapToFile(fd, versionTypeName, versionMap)
 
 	return nil

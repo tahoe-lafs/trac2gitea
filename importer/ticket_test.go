@@ -39,7 +39,7 @@ func TestImportClosedTicketOnly(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportOpenTicketOnly(t *testing.T) {
@@ -73,7 +73,7 @@ func TestImportOpenTicketOnly(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportMultipleTicketsOnly(t *testing.T) {
@@ -114,7 +114,7 @@ func TestImportMultipleTicketsOnly(t *testing.T) {
 	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportTicketWithNoTracUser(t *testing.T) {
@@ -148,7 +148,7 @@ func TestImportTicketWithNoTracUser(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, noTracUserTicket.issueID, noTracUserTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportTicketWithUnmappedTracUser(t *testing.T) {
@@ -182,5 +182,5 @@ func TestImportTicketWithUnmappedTracUser(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, unmappedTracUserTicket.issueID, unmappedTracUserTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }

@@ -39,6 +39,7 @@ type Ticket struct {
 	ResolutionName string
 	SeverityName   string
 	TypeName       string
+	KeywordName    string
 	VersionName    string
 	Status         string
 	Created        int64
@@ -213,6 +214,12 @@ type Accessor interface {
 	 */
 	// GetVersions retrieves all versions used in Trac, passing each one to the provided "handler" function.
 	GetVersions(handlerFn func(version *Label) error) error
+
+	/*
+	 * Keywords
+	 */
+	// GetKeywords retrieves all keywords used in Trac tickets, passing each one to the provided "handler" function.
+	GetKeywords(handlerFn func(tracKeyword *Label) error) error
 
 	/*
 	 * Wiki

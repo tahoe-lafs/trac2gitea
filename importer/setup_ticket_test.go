@@ -56,6 +56,7 @@ var (
 	resolutionMap map[string]string
 	severityMap   map[string]string
 	typeMap       map[string]string
+	keywordMap    map[string]string
 	versionMap    map[string]string
 	revisionMap   map[string]string
 )
