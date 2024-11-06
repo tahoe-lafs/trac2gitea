@@ -41,7 +41,7 @@ func TestImportTicketWithComments(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportMultipleTicketsWithComments(t *testing.T) {
@@ -88,7 +88,7 @@ func TestImportMultipleTicketsWithComments(t *testing.T) {
 	expectIssueDescriptionUpdates(t, closedTicket.issueID, closedTicket.descriptionMarkdown)
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportTicketWithCommentButNoTracUser(t *testing.T) {
@@ -125,7 +125,7 @@ func TestImportTicketWithCommentButNoTracUser(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, noTracUserTicket.issueID, noTracUserTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportTicketWithCommentButUnmappedTracUser(t *testing.T) {
@@ -162,5 +162,5 @@ func TestImportTicketWithCommentButUnmappedTracUser(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, unmappedTracUserTicket.issueID, unmappedTracUserTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
