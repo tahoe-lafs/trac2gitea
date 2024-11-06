@@ -39,7 +39,7 @@ type Ticket struct {
 	ResolutionName string
 	SeverityName   string
 	TypeName       string
-	KeywordName    string
+	Keywords       string
 	VersionName    string
 	Status         string
 	Created        int64
@@ -218,6 +218,8 @@ type Accessor interface {
 	/*
 	 * Keywords
 	 */
+	// ParseKeywords
+	ParseKeywords(keywords string) []string
 	// GetKeywords retrieves all keywords used in Trac tickets, passing each one to the provided "handler" function.
 	GetKeywords(handlerFn func(tracKeyword *Label) error) error
 

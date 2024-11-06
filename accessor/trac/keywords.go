@@ -11,6 +11,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ParseKeywords splits the Trac "keywords" string in a slice of separated keywords
+func (accessor *DefaultAccessor) ParseKeywords(keywords string) []string {
+	return strings.Fields(strings.ReplaceAll(keywords, ",", " "))
+}
+
 // GetKeywords retrieves all keywords used in Trac tickets, passing each one to the provided "handler" function.
 func (accessor *DefaultAccessor) GetKeywords(handlerFn func(tracKeyword *Label) error) error {
 	rows, err := accessor.db.Query(`SELECT DISTINCT COALESCE(keywords,'') keywords FROM ticket`)
@@ -26,7 +31,7 @@ func (accessor *DefaultAccessor) GetKeywords(handlerFn func(tracKeyword *Label) 
 			err = errors.Wrapf(err, "retrieving Trac keywords")
 			return err
 		}
-		rowKeywords := strings.Fields(strings.ReplaceAll(rawKeywords, ",", " "))
+		rowKeywords := accessor.ParseKeywords(rawKeywords)
 		// fmt.Println("Keywords:", rowKeywords)
 		for j := 0; j < len(rowKeywords); j++ {
 			if !slices.Contains(keywords, rowKeywords[j]) {

@@ -100,9 +100,11 @@ func (importer *Importer) ImportTickets(
 			return err
 		}
 
-		_, err = importer.importTicketLabel(issueID, ticket.KeywordName, keywordMap)
-		if err != nil {
-			return err
+		for _, keywordName := range importer.tracAccessor.ParseKeywords(ticket.Keywords) {
+			_, err = importer.importTicketLabel(issueID, keywordName, keywordMap)
+			if err != nil {
+				return err
+			}
 		}
 
 		_, err = importer.importTicketLabel(issueID, ticket.VersionName, versionMap)
