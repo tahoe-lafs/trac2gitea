@@ -19,6 +19,7 @@ func (accessor *DefaultAccessor) GetTickets(handlerFn func(ticket *Ticket) error
 			COALESCE(t.priority,''),
 			COALESCE(t.owner,''),
 			t.reporter,
+			COALESCE(t.keywords,''),
 			COALESCE(t.version,''),
 			COALESCE(t.milestone,''),
 			lower(COALESCE(t.status, '')),

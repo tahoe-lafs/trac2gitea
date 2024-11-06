@@ -13,7 +13,7 @@ import (
 
 // GetKeywords retrieves all keywords used in Trac tickets, passing each one to the provided "handler" function.
 func (accessor *DefaultAccessor) GetKeywords(handlerFn func(tracKeyword *Label) error) error {
-	rows, err := accessor.db.Query(`SELECT DISTINCT keywords FROM ticket`)
+	rows, err := accessor.db.Query(`SELECT DISTINCT COALESCE(keywords,'') keywords FROM ticket`)
 	if err != nil {
 		err = errors.Wrapf(err, "retrieving Trac keywords")
 		return err
