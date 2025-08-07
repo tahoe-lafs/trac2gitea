@@ -131,7 +131,7 @@ func parseArgs() {
 }
 
 // importData imports the non-wiki Trac data.
-func importData(dataImporter *importer.Importer, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap map[string]string) error {
+func importData(dataImporter *importer.Importer, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap map[string]string) error {
 	var err error
 	if err = dataImporter.ImportFullNames(); err != nil {
 		return err
@@ -151,13 +151,16 @@ func importData(dataImporter *importer.Importer, userMap, componentMap, priority
 	if err = dataImporter.ImportTypes(typeMap); err != nil {
 		return err
 	}
+	if err = dataImporter.ImportKeywords(keywordMap); err != nil {
+		return err
+	}
 	if err = dataImporter.ImportVersions(versionMap); err != nil {
 		return err
 	}
 	if err = dataImporter.ImportMilestones(); err != nil {
 		return err
 	}
-	if err = dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap); err != nil {
+	if err = dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap); err != nil {
 		return err
 	}
 
@@ -165,9 +168,9 @@ func importData(dataImporter *importer.Importer, userMap, componentMap, priority
 }
 
 // performImport performs the actual import
-func performImport(dataImporter *importer.Importer, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap map[string]string) error {
+func performImport(dataImporter *importer.Importer, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap map[string]string) error {
 	if !wikiOnly {
-		if err := importData(dataImporter, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap); err != nil {
+		if err := importData(dataImporter, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap); err != nil {
 			dataImporter.RollbackImport()
 			return err
 		}
@@ -225,7 +228,7 @@ func main() {
 		return
 	}
 
-	componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, err := readLabelMaps(labelMapInputFile, dataImporter)
+	componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, err := readLabelMaps(labelMapInputFile, dataImporter)
 	if err != nil {
 		log.Fatal("%+v", err)
 		return
@@ -241,7 +244,7 @@ func main() {
 			log.Info("wrote user map to %s", userMapOutputFile)
 		}
 		if labelMapOutputFile != "" {
-			if err = writeLabelMapsToFile(labelMapOutputFile, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap); err != nil {
+			if err = writeLabelMapsToFile(labelMapOutputFile, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap); err != nil {
 				log.Fatal("%+v", err)
 				return
 			}
@@ -257,7 +260,7 @@ func main() {
 		return
 	}
 
-	err = performImport(dataImporter, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	err = performImport(dataImporter, userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 	if err != nil {
 		log.Fatal("%+v", err)
 		return

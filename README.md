@@ -7,12 +7,12 @@
 At present the following Trac data is converted:
 
 * Trac users mapped onto Gitea usernames (can be customised by providing an explicit mapping)
-* Trac components, priorities, resolutions, severities, types and versions to Gitea labels (can be customised by providing an explicit mapping)
+* Trac components, priorities, resolutions, severities, types, keywords and versions to Gitea labels (can be customised by providing an explicit mapping)
 * Trac milestones to Gitea milestones
 * Trac tickets to Gitea issues
   * Trac ticket attachments to Gitea issue attachments
   * Trac ticket comments to Gitea issue comments with markdown text conversion
-  * Trac ticket component, priority, resolution, severity, type and version changes to Gitea issue label changes
+  * Trac ticket component, priority, resolution, severity, type, keywords and version changes to Gitea issue label changes
   * Trac ticket milestone changes to Gitea issue milestone changes
   * Trac ticket owner changes to Gitea issue assignee changes
   * Trac ticket "close" and "reopen" status changes to Gitea issue equivalents
