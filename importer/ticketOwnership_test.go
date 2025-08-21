@@ -40,7 +40,7 @@ func TestImportTicketOwnershipChange(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }
 
 func TestImportTicketOwnershipRemoval(t *testing.T) {
@@ -77,5 +77,5 @@ func TestImportTicketOwnershipRemoval(t *testing.T) {
 	// expect to update Gitea issue description
 	expectIssueDescriptionUpdates(t, openTicket.issueID, openTicket.descriptionMarkdown)
 
-	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, versionMap, revisionMap)
+	dataImporter.ImportTickets(userMap, componentMap, priorityMap, resolutionMap, severityMap, typeMap, keywordMap, versionMap, revisionMap)
 }

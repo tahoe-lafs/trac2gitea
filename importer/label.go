@@ -17,6 +17,7 @@ const (
 	resolutionLabelColor = "#9e9e9e"
 	severityLabelColor   = "#eb6420"
 	typeLabelColor       = "#e11d21"
+	keywordLabelColor    = "#ff00ff"
 	versionLabelColor    = "#009800"
 )
 
@@ -62,6 +63,11 @@ func (importer *Importer) DefaultSeverityLabelMap() (map[string]string, error) {
 // DefaultTypeLabelMap retrieves the default mapping between Trac types and Gitea labels
 func (importer *Importer) DefaultTypeLabelMap() (map[string]string, error) {
 	return importer.defaultLabelMap(trac.Accessor.GetTypes)
+}
+
+// DefaultKeywordLabelMap retrieves the default mapping between Trac keywords and Gitea labels
+func (importer *Importer) DefaultKeywordLabelMap() (map[string]string, error) {
+	return importer.defaultLabelMap(trac.Accessor.GetKeywords)
 }
 
 // DefaultVersionLabelMap retrieves the default mapping between Trac versions and Gitea labels
@@ -148,6 +154,14 @@ func (importer *Importer) ImportSeverities(severityNameMap map[string]string) er
 func (importer *Importer) ImportTypes(typeNameMap map[string]string) error {
 	return importer.tracAccessor.GetTypes(func(tracType *trac.Label) error {
 		_, err := importer.importLabel(tracType, typeNameMap, typeLabelColor)
+		return err
+	})
+}
+
+// ImportKeywords imports Trac keywords as Gitea labels.
+func (importer *Importer) ImportKeywords(keywordNameMap map[string]string) error {
+	return importer.tracAccessor.GetKeywords(func(keyword *trac.Label) error {
+		_, err := importer.importLabel(keyword, keywordNameMap, keywordLabelColor)
 		return err
 	})
 }

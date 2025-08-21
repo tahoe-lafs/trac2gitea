@@ -56,6 +56,7 @@ var (
 	resolutionMap map[string]string
 	severityMap   map[string]string
 	typeMap       map[string]string
+	keywordMap    map[string]string
 	versionMap    map[string]string
 	revisionMap   map[string]string
 )
@@ -66,6 +67,7 @@ func initMaps() {
 	resolutionMap = make(map[string]string)
 	severityMap = make(map[string]string)
 	typeMap = make(map[string]string)
+	keywordMap = make(map[string]string)
 	versionMap = make(map[string]string)
 }
 
@@ -102,6 +104,20 @@ var (
 	severityLabel2   *TicketLabelImport
 	typeLabel1       *TicketLabelImport
 	typeLabel2       *TicketLabelImport
+	keyword1         string
+	keyword2         string
+	keyword3         string
+	keywordLst1      string
+	keywordLst2      string
+	keywordLst3      string
+	keywordLst4      string
+	keywordLabel1    *TicketLabelImport
+	keywordLabel2    *TicketLabelImport
+	keywordLabel3    *TicketLabelImport
+	keywordLabelLst1 []*TicketLabelImport
+	keywordLabelLst2 []*TicketLabelImport
+	keywordLabelLst3 []*TicketLabelImport
+	keywordLabelLst4 []*TicketLabelImport
 	versionLabel1    *TicketLabelImport
 	versionLabel2    *TicketLabelImport
 )
@@ -117,6 +133,20 @@ func setUpTicketLabels(t *testing.T) {
 	severityLabel2 = createTicketLabelImport("severity2", severityMap)
 	typeLabel1 = createTicketLabelImport("type1", typeMap)
 	typeLabel2 = createTicketLabelImport("type2", typeMap)
+	keyword1 = "keyword1"
+	keyword2 = "keyword2"
+	keyword3 = "keyword3"
+	keywordLst1 = keyword1
+	keywordLst2 = keyword1 + " " + keyword2
+	keywordLst3 = keyword1 + ", " + keyword2 + "," + keyword3
+	keywordLst4 = ""
+	keywordLabel1 = createTicketLabelImport(keyword1, keywordMap)
+	keywordLabel2 = createTicketLabelImport(keyword2, keywordMap)
+	keywordLabel3 = createTicketLabelImport(keyword3, keywordMap)
+	keywordLabelLst1 = []*TicketLabelImport{keywordLabel1}
+	keywordLabelLst2 = []*TicketLabelImport{keywordLabel1, keywordLabel2}
+	keywordLabelLst3 = []*TicketLabelImport{keywordLabel1, keywordLabel2, keywordLabel3}
+	keywordLabelLst4 = nil
 	versionLabel1 = createTicketLabelImport("version1", versionMap)
 	versionLabel2 = createTicketLabelImport("version2", versionMap)
 }
@@ -136,6 +166,8 @@ type TicketImport struct {
 	resolutionLabel     *TicketLabelImport
 	severityLabel       *TicketLabelImport
 	typeLabel           *TicketLabelImport
+	keywords            string
+	keywordLabels       []*TicketLabelImport
 	versionLabel        *TicketLabelImport
 	closed              bool
 	status              string
@@ -153,6 +185,8 @@ func createTicketImport(
 	resolutionLabel *TicketLabelImport,
 	severityLabel *TicketLabelImport,
 	typeLabel *TicketLabelImport,
+	keywords string,
+	keywordLabels []*TicketLabelImport,
 	versionLabel *TicketLabelImport) *TicketImport {
 	status := "open"
 	if closed {
@@ -173,6 +207,8 @@ func createTicketImport(
 		resolutionLabel:     resolutionLabel,
 		severityLabel:       severityLabel,
 		typeLabel:           typeLabel,
+		keywords:            keywords,
+		keywordLabels:       keywordLabels,
 		versionLabel:        versionLabel,
 		closed:              closed,
 		status:              status,
@@ -194,6 +230,7 @@ func createTracTicket(ticket *TicketImport) *trac.Ticket {
 		ResolutionName: ticket.resolutionLabel.tracName,
 		SeverityName:   ticket.severityLabel.tracName,
 		TypeName:       ticket.typeLabel.tracName,
+		Keywords:       ticket.keywords,
 		VersionName:    ticket.versionLabel.tracName,
 		Status:         ticket.status,
 		Created:        ticket.created,
@@ -227,19 +264,19 @@ func setUpTickets(t *testing.T) {
 	closedTicket = createTicketImport(
 		"closed", true,
 		closedTicketOwner, closedTicketReporter,
-		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, versionLabel1)
+		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, keywordLst1, keywordLabelLst1, versionLabel1)
 	openTicket = createTicketImport(
 		"open", false,
 		openTicketOwner, openTicketReporter,
-		componentLabel2, priorityLabel2, resolutionLabel2, severityLabel2, typeLabel2, versionLabel2)
+		componentLabel2, priorityLabel2, resolutionLabel2, severityLabel2, typeLabel2, keywordLst2, keywordLabelLst2, versionLabel2)
 	noTracUserTicket = createTicketImport(
 		"noTracUser", false,
 		noTracUserTicketOwner, noTracUserTicketReporter,
-		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, versionLabel1)
+		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, keywordLst3, keywordLabelLst3, versionLabel1)
 	unmappedTracUserTicket = createTicketImport(
 		"unmappedTracUser", false,
 		unmappedTracUserTicketOwner, unmappedTracUserTicketReporter,
-		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, versionLabel1)
+		componentLabel1, priorityLabel1, resolutionLabel1, severityLabel1, typeLabel1, keywordLst4, keywordLabelLst4, versionLabel1)
 }
 
 func expectTracTicketRetrievals(t *testing.T, tickets ...*TicketImport) {
@@ -253,6 +290,22 @@ func expectTracTicketRetrievals(t *testing.T, tickets ...*TicketImport) {
 				handlerFn(tracTicket)
 			}
 			return nil
+		})
+}
+
+func expectTracKeywordsParsing(t *testing.T, ticket *TicketImport, keywordLabels []*TicketLabelImport) {
+	// expect trac accessor to parse keywords in trac ticket
+	mockTracAccessor.
+		EXPECT().
+		ParseKeywords(gomock.Any()).
+		DoAndReturn(func(keywords string) []string {
+			assertEquals(t, keywords, ticket.keywords)
+			// Build the expected list of keywords from the labels
+			var keywordLst []string
+			for _, keywordLabel := range ticket.keywordLabels {
+				keywordLst = append(keywordLst, keywordLabel.tracName)
+			}
+			return keywordLst
 		})
 }
 
@@ -368,6 +421,10 @@ func expectAllTicketActions(t *testing.T, ticket *TicketImport) {
 	expectIssueLabelCreation(t, ticket, ticket.resolutionLabel)
 	expectIssueLabelCreation(t, ticket, ticket.severityLabel)
 	expectIssueLabelCreation(t, ticket, ticket.typeLabel)
+	expectTracKeywordsParsing(t, ticket, ticket.keywordLabels)
+	for _, keywordLabel := range ticket.keywordLabels {
+		expectIssueLabelCreation(t, ticket, keywordLabel)
+	}
 	expectIssueLabelCreation(t, ticket, ticket.versionLabel)
 
 	// expect the repo issue index to be updated
