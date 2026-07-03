@@ -35,7 +35,7 @@ func (accessor *DefaultAccessor) GetUserID(userName string) (int64, error) {
 
 	var id int64 = NullID
 	err := accessor.db.Model(&User{}).
-		Where("lower_name=@name OR email=@name", map[string]interface{}{"name": userName}).
+		Where("lower_name=@name OR email=@name", map[string]interface{}{"name": strings.ToLower(userName)}).
 		Limit(1).
 		Pluck("id", &id).Error
 
@@ -52,7 +52,7 @@ func (accessor *DefaultAccessor) GetUserEMailAddress(userName string) (string, e
 	var emailAddress string
 
 	err := accessor.db.Model(&User{}).
-		Where("lower_name=?", userName).
+		Where("lower_name=?", strings.ToLower(userName)).
 		Limit(1).
 		Pluck("email", &emailAddress).Error
 
